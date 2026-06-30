@@ -1,0 +1,2335 @@
+/* ==========================================================
+   Trail & Bish Dynasty v1.0
+   Global Theme
+========================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;600;700;800&display=swap');
+
+/* ==========================================================
+   DESIGN TOKENS
+   Cool-page CSS uses var() references below.
+   Owner colors (#2E7DF7 / #E63B3B) and Legacy warm palette
+   (#D4AF37, #8B6914, etc.) are intentional and live inline.
+========================================================== */
+:root{
+    /* App / page backgrounds */
+    --bg-app:    #05080F;
+    --bg-card:   #0A1624;
+    --bg-panel:  #0D1A2A; /* reserved: Analytics */
+
+    /* Borders */
+    --border:        #223247;
+    --border-strong: #355173;
+
+    /* Text ramp */
+    --text-primary:   #F8FBFF;
+    --text-secondary: #D6DFEA;
+    --text-muted:     #A8B5C6;
+    --text-label:     #8191A6;
+
+    /* Border-radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    /* Accent colors */
+    --gold:     #F3BC2E;
+    --gold-rgb: 243,188,46;
+    --cyan:     #33D4E9;
+    --green:    #5AD66F;
+    /* --purple: #A65BFF; */
+}
+
+html,
+body,
+[class*="css"]{
+    font-family:'Barlow',sans-serif;
+    background:var(--bg-app);
+    color:var(--text-primary);
+}
+
+/* Main App */
+
+.stApp{
+
+    background:
+        radial-gradient(circle at top,#12284f 0%,var(--bg-app) 40%,#05070B 100%);
+
+    color:var(--text-primary);
+
+}
+
+/* Remove White Space */
+
+.block-container{
+
+    padding-top:1.4rem;
+
+    padding-left:2.2rem;
+
+    padding-right:2.2rem;
+
+    max-width:1600px;
+
+}
+
+/* Headings */
+
+h1{
+
+    font-size:3rem;
+
+    font-weight:800;
+
+    color:var(--text-primary);
+
+}
+
+h2{
+
+    font-size:2rem;
+
+    font-weight:700;
+
+}
+
+h3{
+
+    font-size:1.3rem;
+
+}
+
+/* Metrics */
+
+[data-testid="stMetric"]{
+
+    background:var(--bg-card);
+
+    border:1px solid #1F4F95;
+
+    border-radius:18px;
+
+    padding:18px;
+
+    box-shadow:
+        0 0 12px rgba(42,115,255,.18);
+
+}
+
+/* Buttons */
+
+.stButton button{
+
+    background:#1C63D5;
+
+    color:var(--text-primary);
+
+    border:none;
+
+    border-radius:var(--radius-md);
+
+    font-weight:700;
+
+    transition:.25s;
+
+}
+
+.stButton button:hover{
+
+    background:#2563EB;
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 0 20px rgba(59,130,246,.35);
+
+}
+
+/* Horizontal Rules */
+
+hr{
+
+    border-color:var(--border);
+
+}
+
+/* Sidebar */
+
+section[data-testid="stSidebar"]{
+
+    background:#060A11;
+
+    border-right:1px solid var(--border);
+
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#234B88;
+
+    border-radius:var(--radius-md);
+
+}
+
+/* =======================================================
+   GLOBAL APP HEADER
+======================================================= */
+
+.tb-header{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin-bottom:35px;
+
+}
+
+.tb-header-left{
+
+    display:flex;
+
+    flex-direction:column;
+
+    text-align:center;
+
+}
+
+.tb-title{
+
+    font-size:54px;
+
+    font-weight:800;
+
+    color:var(--text-primary);
+
+    line-height:1;
+
+}
+
+.tb-subtitle{
+
+    margin-top:10px;
+
+    font-size:18px;
+
+    color:var(--text-muted);
+
+    letter-spacing:.8px;
+
+}
+
+/* ==========================================================
+   GLOW CARD
+========================================================== */
+
+.tb-card{
+
+    padding:28px;
+
+    border-radius:22px;
+
+    background:var(--bg-card);
+
+    transition:.25s;
+
+    margin-bottom:18px;
+
+    border:1px solid var(--border);
+
+}
+
+.tb-card:hover{
+
+    transform:translateY(-4px);
+
+}
+
+.tb-card-title{
+
+    font-size:16px;
+
+    color:var(--text-muted);
+
+    letter-spacing:.7px;
+
+    margin-bottom:14px;
+
+}
+
+.tb-card-value{
+
+    font-size:42px;
+
+    font-weight:800;
+
+    color:var(--text-primary);
+
+}
+
+.tb-card-subtitle{
+
+    margin-top:12px;
+
+    color:var(--text-muted);
+
+    font-size:15px;
+
+}
+
+/* Blue */
+
+.tb-blue{
+
+    box-shadow:
+        0 0 25px rgba(37,99,235,.20);
+
+}
+
+/* Red */
+
+.tb-red{
+
+    box-shadow:
+        0 0 25px rgba(220,38,38,.18);
+
+}
+
+/* Green */
+
+.tb-green{
+
+    box-shadow:
+        0 0 25px rgba(34,197,94,.18);
+
+}
+
+/* Gold */
+
+.tb-gold{
+
+    box-shadow:
+        0 0 25px rgba(var(--gold-rgb),.18);
+
+}
+
+/* ==========================================================
+   SIDEBAR
+========================================================== */
+
+.tb-sidebar-logo{
+
+    text-align:center;
+
+    padding-top:10px;
+
+    padding-bottom:15px;
+
+}
+
+.tb-sidebar-title{
+
+    font-size:28px;
+
+    font-weight:800;
+
+    color:var(--text-primary);
+
+}
+
+.tb-sidebar-subtitle{
+
+    color:var(--text-muted);
+
+    font-size:15px;
+
+    margin-top:6px;
+
+}
+
+.tb-rivalry-box{
+
+    background:var(--bg-card);
+
+    border-radius:18px;
+
+    padding:18px;
+
+    border:1px solid var(--border-strong);
+
+    box-shadow:
+        0 0 18px rgba(41,98,255,.18);
+
+}
+
+.tb-rivalry-title{
+
+    font-size:18px;
+
+    font-weight:700;
+
+    margin-bottom:12px;
+
+}
+
+.tb-score-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-top:8px;
+
+}
+
+.tb-matt{
+
+    color:#2E7DF7;
+
+    font-weight:700;
+
+}
+
+.tb-ryan{
+
+    color:#E63B3B;
+
+    font-weight:700;
+
+}
+
+section[data-testid="stSidebar"] button{
+
+    border-radius:var(--radius-md);
+
+}
+
+/* ==========================================================
+   SIDEBAR NAV & UTILITIES
+========================================================== */
+
+.tb-sidebar-divider{
+    border-top:1px solid var(--border);
+    margin:14px 0;
+}
+
+.tb-sidebar-spacer{
+    height:20px;
+}
+
+.tb-sidebar-leader{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.8px;
+    text-transform:uppercase;
+    margin-top:10px;
+    text-align:center;
+}
+
+section[data-testid="stSidebar"] .stButton button{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    font-weight:600;
+    font-size:14px;
+    border-radius:10px;
+    text-align:left;
+    padding:10px 14px;
+    transition:.2s;
+}
+
+section[data-testid="stSidebar"] .stButton button:hover{
+    background:#111E30;
+    border-color:#2E5FA3;
+    color:var(--text-primary);
+}
+
+/* Active nav item — current page indicator */
+.tb-nav-active{
+    display:block;
+    background:#111E30;
+    border:1px solid #2E5FA3;
+    color:var(--text-primary);
+    font-weight:700;
+    font-size:14px;
+    border-radius:10px;
+    text-align:left;
+    padding:10px 14px;
+    margin-bottom:6px;
+    cursor:default;
+    box-sizing:border-box;
+    line-height:1.4;
+}
+
+/* ==========================================================
+   SECTION HEADER
+========================================================== */
+
+.tb-section-header{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin:28px 0 16px;
+}
+
+.tb-section-title{
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--text-label);
+}
+
+.tb-section-sub{
+    font-size:13px;
+    color:#4A6280;
+}
+
+.tb-section-header::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:linear-gradient(90deg,var(--border) 0%,transparent 100%);
+}
+
+/* ==========================================================
+   OWNER CHIP & POSITION CHIP
+========================================================== */
+
+.tb-chip{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:6px;
+}
+
+.tb-chip-matt{
+    background:rgba(46,125,247,.15);
+    color:#2E7DF7;
+    border:1px solid rgba(46,125,247,.3);
+}
+
+.tb-chip-ryan{
+    background:rgba(230,59,59,.15);
+    color:#E63B3B;
+    border:1px solid rgba(230,59,59,.3);
+}
+
+.tb-pos-chip{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.5px;
+    padding:2px 7px;
+    border-radius:6px;
+    background:#131F30;
+    color:var(--text-label);
+    border:1px solid var(--border);
+}
+
+/* ==========================================================
+   TIER BADGE
+========================================================== */
+
+.tb-tier-badge{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.5px;
+    padding:3px 9px;
+    border-radius:var(--radius-sm);
+    white-space:nowrap;
+}
+
+.tb-tier-franchise{
+    background:rgba(var(--gold-rgb),.15);
+    color:var(--gold);
+    border:1px solid rgba(var(--gold-rgb),.3);
+}
+
+.tb-tier-elite{
+    background:rgba(99,102,241,.15);
+    color:#818CF8;
+    border:1px solid rgba(99,102,241,.3);
+}
+
+.tb-tier-starter{
+    background:rgba(34,197,94,.12);
+    color:#4ADE80;
+    border:1px solid rgba(34,197,94,.25);
+}
+
+.tb-tier-contrib{
+    background:rgba(107,140,174,.1);
+    color:var(--text-label);
+    border:1px solid rgba(107,140,174,.2);
+}
+
+.tb-tier-bust{
+    background:rgba(239,68,68,.12);
+    color:#F87171;
+    border:1px solid rgba(239,68,68,.25);
+}
+
+/* Legend tier — top of the mountain, score ≥ 90 */
+.tb-tier-legend{
+    background:rgba(250,204,21,.18);
+    color:#FDE047;
+    border:1px solid rgba(250,204,21,.4);
+    font-weight:700;
+    letter-spacing:.06em;
+}
+
+/* HOF badge — hand-set flag, independent of tier */
+.tb-hof-badge{
+    display:inline-block;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.1em;
+    padding:2px 7px;
+    border-radius:4px;
+    background:rgba(212,175,55,.2);
+    color:#D4AF37;
+    border:1px solid rgba(212,175,55,.45);
+    vertical-align:middle;
+    margin-left:4px;
+}
+
+/* ==========================================================
+   RIVALRY BANNER
+========================================================== */
+
+.tb-rivalry-banner{
+    display:flex;
+    align-items:stretch;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    overflow:hidden;
+    margin:18px 0 28px;
+    box-shadow:0 0 40px rgba(37,99,235,.1);
+}
+
+.tb-rb-side{
+    flex:1;
+    padding:28px 32px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+
+.tb-rb-matt{
+    border-right:1px solid var(--border);
+    background:linear-gradient(135deg,rgba(37,99,235,.06) 0%,transparent 60%);
+}
+
+.tb-rb-ryan{
+    background:linear-gradient(225deg,rgba(220,38,38,.06) 0%,transparent 60%);
+}
+
+.tb-rb-owner-name{
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:2px;
+    margin-bottom:20px;
+}
+
+.tb-rb-matt .tb-rb-owner-name{ color:#2E7DF7; }
+.tb-rb-ryan .tb-rb-owner-name{ color:#E63B3B; }
+
+.tb-rb-stats{
+    display:flex;
+    gap:28px;
+}
+
+.tb-rb-center{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px 28px;
+    min-width:120px;
+}
+
+.tb-rb-vs{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:3px;
+    color:#3A5070;
+}
+
+.tb-rb-leader{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    margin-top:10px;
+}
+
+/* ==========================================================
+   MINI STAT (used inside rivalry banner)
+========================================================== */
+
+.tb-mini-stat{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.tb-mini-stat-value{
+    font-size:26px;
+    font-weight:800;
+    color:var(--text-primary);
+    line-height:1;
+}
+
+.tb-mini-stat-label{
+    font-size:11px;
+    font-weight:600;
+    color:#4A6280;
+    letter-spacing:.7px;
+    text-transform:uppercase;
+}
+
+/* ==========================================================
+   PLAYER TABLE
+========================================================== */
+
+.tb-player-table{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin-top:8px;
+}
+
+.tb-player-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    background:var(--bg-card);
+    border:1px solid #131F30;
+    border-radius:var(--radius-md);
+    padding:12px 18px;
+    transition:.2s;
+}
+
+.tb-player-row:hover{
+    border-color:var(--border);
+    background:#111E30;
+    transform:translateX(3px);
+}
+
+.tb-pr-rank{
+    font-size:16px;
+    font-weight:800;
+    color:#3A5070;
+    min-width:36px;
+}
+
+.tb-pr-info{
+    flex:1;
+    min-width:0;
+}
+
+.tb-pr-name{
+    font-size:15px;
+    font-weight:700;
+    color:var(--text-primary);
+    margin-bottom:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.tb-pr-meta{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.tb-pr-year{
+    font-size:11px;
+    color:#4A6280;
+    font-weight:600;
+}
+
+.tb-pr-score-wrap{
+    width:120px;
+    flex-shrink:0;
+}
+
+.tb-pr-bar-track{
+    background:#0A1220;
+    border-radius:4px;
+    height:6px;
+    overflow:hidden;
+}
+
+.tb-pr-bar{
+    height:100%;
+    border-radius:4px;
+    transition:width .4s ease;
+}
+
+.tb-bar-matt{ background:linear-gradient(90deg,#1C63D5,#2E7DF7); }
+.tb-bar-ryan{ background:linear-gradient(90deg,#C9272A,#E63B3B); }
+
+.tb-pr-score-num{
+    font-size:18px;
+    font-weight:800;
+    color:var(--text-primary);
+    min-width:36px;
+    text-align:right;
+}
+
+.tb-pr-tier{
+    min-width:110px;
+    text-align:right;
+}
+
+/* ==========================================================
+   CALLOUT CARD
+========================================================== */
+
+.tb-callout{
+    padding:18px 22px;
+    border-radius:14px;
+    background:var(--bg-card);
+    border-left:4px solid;
+    margin-bottom:12px;
+}
+
+.tb-callout.tb-blue { border-left-color:#2E7DF7; }
+.tb-callout.tb-red  { border-left-color:#E63B3B; }
+.tb-callout.tb-gold { border-left-color:var(--gold); }
+.tb-callout.tb-green{ border-left-color:#4ADE80; }
+
+.tb-callout-label{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:#4A6280;
+    margin-bottom:4px;
+}
+
+.tb-callout-value{
+    font-size:22px;
+    font-weight:800;
+    color:var(--text-primary);
+}
+
+.tb-callout-detail{
+    font-size:13px;
+    color:var(--text-label);
+    margin-top:4px;
+}
+
+/* ==========================================================
+   AWARD BADGES
+========================================================== */
+
+.tb-award-badge{
+    display:inline-block;
+    font-size:10px;
+    font-weight:800;
+    padding:2px 6px;
+    border-radius:5px;
+    letter-spacing:.4px;
+    line-height:1.4;
+    white-space:nowrap;
+}
+
+.tb-award-badge sup{
+    font-size:8px;
+}
+
+.tb-award-mvp{
+    background:rgba(var(--gold-rgb),.18);
+    color:var(--gold);
+    border:1px solid rgba(var(--gold-rgb),.4);
+}
+
+.tb-award-honor{
+    background:rgba(99,102,241,.15);
+    color:#818CF8;
+    border:1px solid rgba(99,102,241,.3);
+}
+
+.tb-award-allpro{
+    background:rgba(34,197,94,.12);
+    color:#4ADE80;
+    border:1px solid rgba(34,197,94,.25);
+}
+
+.tb-award-sb{
+    background:rgba(220,38,38,.15);
+    color:#F87171;
+    border:1px solid rgba(220,38,38,.3);
+}
+
+.tb-award-roy{
+    background:rgba(167,139,250,.15);
+    color:#A78BFA;
+    border:1px solid rgba(167,139,250,.3);
+}
+
+.tb-awards-wrap{
+    display:inline-flex;
+    flex-wrap:wrap;
+    gap:4px;
+    align-items:center;
+}
+
+.tb-no-awards{
+    color:#2A3A50;
+    font-size:13px;
+}
+
+/* Pending score badge — 2025-26 draft picks with no career data */
+.tb-score-pending{
+    display:inline-block;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border-radius:6px;
+    background:rgba(107,140,174,.08);
+    color:#3A5070;
+    border:1px solid rgba(107,140,174,.18);
+}
+
+/* ==========================================================
+   ELITE PLAYER CARDS  (Players page signature feature)
+========================================================== */
+
+.tb-elite-card{
+    position:relative;
+    background:var(--bg-card);
+    border-radius:18px;
+    padding:20px 14px 18px;
+    border:1px solid var(--border);
+    text-align:center;
+    overflow:hidden;
+    transition:.25s;
+    cursor:default;
+}
+
+.tb-elite-card::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:3px;
+}
+
+.tb-elite-matt::before{
+    background:linear-gradient(90deg,#1C63D5,#2E7DF7);
+}
+
+.tb-elite-ryan::before{
+    background:linear-gradient(90deg,#C9272A,#E63B3B);
+}
+
+.tb-elite-card:hover{
+    transform:translateY(-5px);
+    border-color:#2A4870;
+    box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+
+.tb-elite-matt:hover{
+    box-shadow:0 8px 32px rgba(37,99,235,.18);
+}
+
+.tb-elite-ryan:hover{
+    box-shadow:0 8px 32px rgba(220,38,38,.18);
+}
+
+.tb-elite-rank{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1.5px;
+    color:#3A5070;
+    margin-bottom:8px;
+    text-transform:uppercase;
+}
+
+.tb-elite-score{
+    font-size:52px;
+    font-weight:900;
+    line-height:1;
+    margin-bottom:10px;
+}
+
+.tb-elite-matt .tb-elite-score{ color:#2E7DF7; }
+.tb-elite-ryan .tb-elite-score{ color:#E63B3B; }
+
+.tb-elite-name{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text-primary);
+    min-height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1.3;
+    margin-bottom:8px;
+}
+
+.tb-elite-meta{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    margin-bottom:7px;
+}
+
+.tb-elite-draft{
+    font-size:11px;
+    color:#4A6280;
+    font-weight:600;
+    margin-bottom:8px;
+}
+
+.tb-elite-tier-wrap{
+    margin-bottom:8px;
+}
+
+.tb-elite-awards{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:3px;
+    min-height:20px;
+}
+
+/* ==========================================================
+   PLAYER DETAIL CARD  (Players page spotlight)
+========================================================== */
+
+.tb-player-detail{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:28px 32px;
+    margin:4px 0 20px;
+    position:relative;
+    overflow:hidden;
+}
+
+.tb-player-detail::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:3px;
+}
+
+.tb-detail-matt::before{ background:linear-gradient(90deg,#1C63D5,#2E7DF7); }
+.tb-detail-ryan::before{ background:linear-gradient(90deg,#C9272A,#E63B3B); }
+
+.tb-detail-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    margin-bottom:20px;
+}
+
+.tb-detail-left{ flex:1; }
+
+.tb-detail-name{
+    font-size:30px;
+    font-weight:800;
+    color:var(--text-primary);
+    margin-bottom:10px;
+    line-height:1.1;
+}
+
+.tb-detail-meta{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:12px;
+}
+
+.tb-detail-awards-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+}
+
+.tb-detail-score{
+    font-size:64px;
+    font-weight:900;
+    line-height:1;
+    padding-left:24px;
+    flex-shrink:0;
+}
+
+.tb-detail-stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+    gap:10px;
+    margin-top:16px;
+}
+
+.tb-detail-stat{
+    background:var(--bg-card);
+    border-radius:var(--radius-md);
+    padding:14px 12px;
+    text-align:center;
+}
+
+.tb-detail-stat-val{
+    font-size:18px;
+    font-weight:800;
+    color:var(--text-primary);
+}
+
+.tb-detail-stat-label{
+    font-size:10px;
+    font-weight:700;
+    color:#4A6280;
+    text-transform:uppercase;
+    letter-spacing:.7px;
+    margin-top:4px;
+}
+
+.tb-detail-notes{
+    font-size:14px;
+    color:#7A98B8;
+    line-height:1.65;
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px solid var(--border);
+}
+
+/* ==========================================================
+   ROSTER TABLE  (Players page full list)
+========================================================== */
+
+.tb-full-roster{
+    background:var(--bg-card);
+    border:1px solid #131F30;
+    border-radius:var(--radius-lg);
+    overflow:hidden;
+    margin-top:8px;
+}
+
+.tb-roster-header,
+.tb-roster-row{
+    display:grid;
+    grid-template-columns:40px 220px 92px 78px 65px 58px 120px 148px 1fr;
+    align-items:center;
+    gap:8px;
+    padding:10px 18px;
+}
+
+.tb-roster-header{
+    background:#060C14;
+    border-bottom:1px solid var(--border);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1.2px;
+    color:#3A5070;
+    text-transform:uppercase;
+}
+
+.tb-roster-row{
+    border-bottom:1px solid var(--bg-card);
+    transition:.15s;
+}
+
+.tb-roster-row:last-child{
+    border-bottom:none;
+}
+
+.tb-roster-row:hover{
+    background:#0F1C2D;
+}
+
+.tb-rc-rank{
+    font-size:13px;
+    font-weight:700;
+    color:#2A3A50;
+}
+
+.tb-rc-player-name{
+    font-size:14px;
+    font-weight:700;
+    color:var(--text-primary);
+}
+
+.tb-rc-year,
+.tb-rc-round{
+    font-size:13px;
+    color:var(--text-label);
+    font-weight:600;
+}
+
+.tb-rc-score-inner{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.tb-rc-score-num{
+    font-size:16px;
+    font-weight:800;
+    color:var(--text-primary);
+    line-height:1;
+}
+
+.tb-rc-bar{
+    width:80px;
+}
+
+/* ==========================================================
+   RESULTS COUNT & EMPTY STATE
+========================================================== */
+
+.tb-results-count{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1px;
+    color:#3A5070;
+    text-transform:uppercase;
+    margin:10px 0 4px;
+}
+
+.tb-empty-state{
+    text-align:center;
+    padding:48px 24px;
+    color:#3A5070;
+    font-size:15px;
+    font-weight:600;
+}
+
+/* ==========================================================
+   STREAMLIT FILTER OVERRIDES  (dark-theme selectbox + input)
+========================================================== */
+
+div[data-testid="stSelectbox"] label,
+div[data-testid="stTextInput"] label{
+    font-size:11px !important;
+    font-weight:700 !important;
+    letter-spacing:1px !important;
+    text-transform:uppercase !important;
+    color:#4A6280 !important;
+}
+
+div[data-testid="stSelectbox"] > div > div,
+div[data-testid="stTextInput"] > div > div > input{
+    background:var(--bg-card) !important;
+    border:1px solid var(--border) !important;
+    border-radius:10px !important;
+    color:var(--text-primary) !important;
+}
+
+/* ==========================================================
+   POSITION TAB RADIO  (Rankings page position group selector)
+========================================================== */
+
+div[data-testid="stRadio"] > label{
+    font-size:11px !important;
+    font-weight:800 !important;
+    letter-spacing:1.2px !important;
+    text-transform:uppercase !important;
+    color:#3A5070 !important;
+    display:none !important;  /* hide the "Position" label — radio group is self-labelling */
+}
+
+div[data-testid="stRadio"] div[role="radiogroup"]{
+    gap:6px !important;
+    flex-wrap:wrap !important;
+}
+
+div[data-testid="stRadio"] div[role="radiogroup"] label{
+    background:var(--bg-card) !important;
+    border:1px solid var(--border) !important;
+    border-radius:8px !important;
+    padding:6px 14px !important;
+    font-size:11px !important;
+    font-weight:800 !important;
+    letter-spacing:1px !important;
+    text-transform:uppercase !important;
+    color:#4A6280 !important;
+    cursor:pointer !important;
+    transition:all .15s !important;
+}
+
+div[data-testid="stRadio"] div[role="radiogroup"] label:hover{
+    border-color:#2A4870 !important;
+    color:var(--text-muted) !important;
+}
+
+div[data-testid="stRadio"] div[role="radiogroup"] label[data-baseweb="radio"]:has(input:checked),
+div[data-testid="stRadio"] div[role="radiogroup"] [aria-checked="true"]{
+    background:#111E30 !important;
+    border-color:#2E5FA3 !important;
+    color:var(--text-primary) !important;
+}
+
+/* ==========================================================
+   RANKINGS — supplementary classes
+========================================================== */
+
+.tb-pos-sample{
+    font-size:11px;
+    color:#3A5070;
+    font-weight:600;
+    margin-left:6px;
+}
+
+.tb-rankings-count{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1px;
+    color:#3A5070;
+    text-transform:uppercase;
+    margin:6px 0 2px;
+}
+
+.tb-pos-group-label{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    margin-bottom:12px;
+}
+
+.tb-pos-group-name{
+    font-size:22px;
+    font-weight:900;
+    color:var(--text-primary);
+}
+
+.tb-pos-group-meta{
+    font-size:12px;
+    color:#3A5070;
+    font-weight:600;
+    letter-spacing:.6px;
+}
+
+/* ==========================================================
+   WINNER BADGE  (reusable — War Room · Legacy · Analytics)
+========================================================== */
+
+.tb-winner-badge{
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.8px;
+    text-transform:uppercase;
+    padding:3px 9px;
+    border-radius:6px;
+    display:inline-block;
+}
+
+.tb-winner-matt{
+    background:rgba(46,125,247,.13);
+    color:#2E7DF7;
+    border:1px solid rgba(46,125,247,.28);
+}
+
+.tb-winner-ryan{
+    background:rgba(230,59,59,.13);
+    color:#E63B3B;
+    border:1px solid rgba(230,59,59,.28);
+}
+
+.tb-winner-tie{
+    background:rgba(107,140,174,.08);
+    color:var(--text-label);
+    border:1px solid rgba(107,140,174,.18);
+}
+
+/* ==========================================================
+   GRADE BADGE  (reusable — War Room · Analytics · Rankings)
+========================================================== */
+
+.tb-grade-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:32px;
+    height:32px;
+    font-size:15px;
+    font-weight:900;
+    border-radius:var(--radius-sm);
+}
+
+.tb-grade-S{ background:rgba(var(--gold-rgb),.18); color:var(--gold); border:1px solid rgba(var(--gold-rgb),.35); }
+.tb-grade-A{ background:rgba(34,197,94,.14);  color:#4ADE80; border:1px solid rgba(34,197,94,.28);  }
+.tb-grade-B{ background:rgba(99,102,241,.14); color:#818CF8; border:1px solid rgba(99,102,241,.28); }
+.tb-grade-C{ background:rgba(107,140,174,.1); color:var(--text-label); border:1px solid rgba(107,140,174,.2); }
+.tb-grade-D{ background:rgba(239,68,68,.11);  color:#F87171; border:1px solid rgba(239,68,68,.22);  }
+.tb-grade--{ background:rgba(107,140,174,.05);color:#3A5070; border:1px solid rgba(107,140,174,.1); }
+
+/* ==========================================================
+   COMPARISON PANEL  (reusable — War Room · Man Status · Analytics)
+========================================================== */
+
+.tb-comparison-panel{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    margin-bottom:20px;
+}
+
+.tb-comparison-title{
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:2px;
+    color:#3A5070;
+    text-transform:uppercase;
+    padding:13px 22px;
+    border-bottom:1px solid #131F30;
+    background:#060C14;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.tb-comparison-row{
+    display:grid;
+    grid-template-columns:1fr 150px 1fr;
+    align-items:center;
+    padding:11px 22px;
+    border-bottom:1px solid #080F19;
+    gap:12px;
+}
+
+.tb-comparison-row:last-child{ border-bottom:none; }
+
+.tb-cr-matt{
+    text-align:right;
+    font-size:17px;
+    font-weight:700;
+    color:#5A7494;
+    transition:color .15s;
+}
+
+.tb-cr-ryan{
+    text-align:left;
+    font-size:17px;
+    font-weight:700;
+    color:#5A7494;
+    transition:color .15s;
+}
+
+.tb-cr-label{
+    text-align:center;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:#2E4560;
+}
+
+.tb-cr-matt-win{ color:#2E7DF7 !important; font-weight:800; }
+.tb-cr-ryan-win{ color:#E63B3B !important; font-weight:800; }
+
+/* ==========================================================
+   DRAFT CLASS CARD  (War Room signature feature)
+========================================================== */
+
+.tb-war-room-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-top:4px;
+}
+
+.tb-class-card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    overflow:hidden;
+    transition:transform .2s, border-color .2s, box-shadow .2s;
+}
+
+.tb-class-card:hover{
+    border-color:#2A4870;
+    transform:translateY(-2px);
+    box-shadow:0 6px 28px rgba(0,0,0,.35);
+}
+
+.tb-class-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 18px;
+    background:#060C14;
+    border-bottom:1px solid #101C2C;
+}
+
+.tb-class-year{
+    font-size:20px;
+    font-weight:900;
+    color:var(--text-primary);
+    letter-spacing:-.5px;
+}
+
+.tb-class-total{
+    font-size:11px;
+    color:#3A5070;
+    font-weight:700;
+    letter-spacing:.6px;
+}
+
+.tb-class-sides{
+    display:flex;
+    align-items:stretch;
+}
+
+.tb-class-side{
+    flex:1;
+    padding:14px 18px;
+}
+
+.tb-class-side-matt{
+    border-right:1px solid #101C2C;
+    background:linear-gradient(135deg,rgba(37,99,235,.05) 0%,transparent 55%);
+}
+
+.tb-class-side-ryan{
+    background:linear-gradient(225deg,rgba(220,38,38,.05) 0%,transparent 55%);
+}
+
+.tb-class-owner-label{
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:2px;
+    margin-bottom:10px;
+}
+
+.tb-class-side-matt .tb-class-owner-label{ color:#2E7DF7; }
+.tb-class-side-ryan .tb-class-owner-label{ color:#E63B3B; }
+
+.tb-class-body{ margin-bottom:10px; }
+
+.tb-cs-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:3px 0;
+    font-size:13px;
+}
+
+.tb-cs-label{
+    color:#3A5070;
+    font-weight:600;
+    font-size:12px;
+}
+
+.tb-cs-value{
+    color:var(--text-muted);
+    font-weight:700;
+}
+
+.tb-cs-value-winner{ font-weight:800; }
+
+.tb-class-grade-wrap{ margin-top:2px; }
+
+/* ==========================================================
+   WAR ROOM — Class deep dive table
+========================================================== */
+
+.tb-class-dive-header{
+    display:grid;
+    grid-template-columns:36px 1fr 90px 52px 52px 52px 90px 130px;
+    gap:8px;
+    padding:8px 14px;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+    color:#2E4560;
+    border-bottom:1px solid #101C2C;
+    background:#060C14;
+    border-radius:12px 12px 0 0;
+}
+
+.tb-class-dive-row{
+    display:grid;
+    grid-template-columns:36px 1fr 90px 52px 52px 52px 90px 130px;
+    gap:8px;
+    padding:9px 14px;
+    border-bottom:1px solid #080F19;
+    font-size:13px;
+    align-items:center;
+    transition:background .15s;
+}
+
+.tb-class-dive-row:last-child{ border-bottom:none; border-radius:0 0 12px 12px; }
+.tb-class-dive-row:hover{ background:rgba(46,125,255,.04); }
+
+.tb-class-dive-table{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    overflow:hidden;
+}
+
+.tb-cd-rank{ color:#3A5070; font-weight:700; font-size:12px; }
+.tb-cd-name{ font-weight:700; color:var(--text-primary); }
+.tb-cd-score{ font-weight:800; text-align:right; }
+
+/* ================================================================
+   LEGACY CENTER — Museum Identity
+   Black marble · Gold trim · Trophy lighting
+   All .tb-lc-* · .tb-exhibit-* · .tb-award-tile · .tb-timeline-*
+   · .tb-spotlight-* classes are defined here ONLY.
+================================================================ */
+
+/* --- Hero Welcome Hall ----------------------------------------- */
+.tb-lc-hero{
+    background:
+        radial-gradient(ellipse at 50% 108%, rgba(212,175,55,.32) 0%, transparent 42%),
+        radial-gradient(ellipse at 50% 0%,   rgba(100,75,10,.10)  0%, transparent 50%),
+        radial-gradient(ellipse at 18% 55%,  rgba(90,65,8,.09)    0%, transparent 45%),
+        radial-gradient(ellipse at 82% 55%,  rgba(90,65,8,.09)    0%, transparent 45%),
+        linear-gradient(180deg,#0E0A00 0%,#080500 60%,#030200 100%);
+    border:1px solid rgba(180,130,20,.28);
+    border-radius:20px;
+    padding:28px 18px 22px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-height:290px;
+    position:relative;
+    overflow:hidden;
+}
+/* Column pillars — wider, with glow */
+.tb-lc-hero::before,.tb-lc-hero::after{
+    content:'';
+    position:absolute;
+    top:0;bottom:0;width:2px;
+    background:linear-gradient(180deg,
+        transparent 0%,
+        rgba(180,130,20,.15) 8%,
+        rgba(180,130,20,.52) 32%,
+        rgba(212,175,55,.60) 50%,
+        rgba(180,130,20,.52) 68%,
+        rgba(180,130,20,.15) 92%,
+        transparent 100%);
+    filter:blur(.4px);
+}
+.tb-lc-hero::before{ left:23%; }
+.tb-lc-hero::after{  right:23%; }
+
+/* Dynasty Banners */
+.tb-lc-banner{
+    border-radius:var(--radius-md);
+    padding:14px 15px 12px;
+    text-align:center;
+    min-width:148px;
+    flex-shrink:0;
+    background:linear-gradient(180deg,rgba(20,16,2,.97),rgba(8,6,0,.99));
+}
+.tb-lc-banner-matt{ border:1px solid rgba(46,125,247,.28); border-top:3px solid #2E7DF7; }
+.tb-lc-banner-ryan{ border:1px solid rgba(230,59,59,.28); border-top:3px solid #E63B3B; }
+.tb-lc-banner-owner-name{
+    font-size:20px;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+}
+.tb-lc-banner-matt .tb-lc-banner-owner-name{ color:#2E7DF7; }
+.tb-lc-banner-ryan .tb-lc-banner-owner-name{ color:#E63B3B; }
+.tb-lc-banner-dynasty{
+    font-size:9px;font-weight:700;letter-spacing:2px;color:#6B5010;
+    text-transform:uppercase;margin-bottom:10px;
+}
+.tb-lc-banner-est{ font-size:9px;color:#5A4008;letter-spacing:1px;margin-bottom:14px; }
+.tb-lc-banner-icon{ font-size:26px;display:block;margin-bottom:2px; }
+.tb-lc-banner-count{ font-size:30px;font-weight:900;color:#D4AF37;line-height:1; }
+.tb-lc-banner-count-label{
+    font-size:8px;font-weight:700;letter-spacing:2px;color:#8B6914;
+    text-transform:uppercase;margin-top:3px;
+}
+
+/* Hero Center */
+.tb-lc-hero-center{ flex:1;text-align:center;padding:0 6px; }
+.tb-lc-welcome-line{
+    font-size:9px;font-weight:800;letter-spacing:4px;color:#7A5C08;
+    text-transform:uppercase;margin-bottom:5px;
+}
+.tb-lc-hero-title{
+    font-size:40px;font-weight:900;color:#D4AF37;
+    text-shadow:0 0 50px rgba(212,175,55,.5),0 0 20px rgba(212,175,55,.25),0 2px 8px rgba(0,0,0,.9);
+    letter-spacing:5px;line-height:1;margin-bottom:5px;
+}
+.tb-lc-hero-subtitle{
+    font-size:10px;font-weight:700;color:#8B6914;
+    letter-spacing:4px;text-transform:uppercase;margin-bottom:10px;
+}
+/* Trophy pedestal wrapper */
+.tb-lc-trophy-pedestal{
+    position:relative;display:inline-block;margin:0 auto 8px;
+}
+.tb-lc-trophy-glow{
+    position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);
+    width:130px;height:36px;
+    background:radial-gradient(ellipse,rgba(212,175,55,.65) 0%,transparent 70%);
+    filter:blur(10px);border-radius:50%;
+    pointer-events:none;
+}
+.tb-lc-hero-trophy{
+    font-size:90px;
+    filter:
+        drop-shadow(0 0 18px rgba(212,175,55,.80))
+        drop-shadow(0 0 40px rgba(180,130,20,.45))
+        drop-shadow(0 6px 12px rgba(0,0,0,.7));
+    display:block;line-height:1;position:relative;z-index:1;
+}
+.tb-lc-hero-tagline{
+    font-size:11px;color:#5A4008;line-height:1.65;
+    max-width:290px;margin:0 auto 10px;
+}
+.tb-lc-explore-cue{
+    font-size:10px;font-weight:800;letter-spacing:3px;
+    color:#8B6914;text-transform:uppercase;
+}
+
+/* --- Right Panel (Rivalry · Glance · Moments) ------------------ */
+.tb-lc-rivalry-box{
+    background:rgba(10,8,0,.65);
+    border:1px solid rgba(180,130,20,.18);
+    border-radius:var(--radius-md);
+    padding:18px 20px;
+    margin-bottom:10px;
+}
+
+/* Equal-height Glance / Facts row — both panels in one flex container */
+.tb-lc-glance-facts-row{
+    display:flex;
+    gap:1rem;
+    align-items:stretch;
+    margin-bottom:10px;
+}
+.tb-lc-glance-facts-row .tb-lc-rivalry-box{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    margin-bottom:0;
+}
+.tb-lc-glance-facts-row .tb-lc-glance-grid{
+    flex:1;
+    align-content:start;
+}
+.tb-lc-moments-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+}
+
+.tb-lc-panel-title{
+    font-size:11px;font-weight:800;letter-spacing:3px;color:#8B6914;
+    text-transform:uppercase;margin-bottom:10px;
+    border-bottom:1px solid rgba(180,130,20,.14);padding-bottom:7px;
+    text-align:center;
+}
+.tb-lc-rival-row{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+}
+.tb-lc-rival-owner{ font-size:10px;font-weight:700;letter-spacing:1px; }
+.tb-lc-rival-score{ font-size:20px;font-weight:900; }
+.tb-lc-rival-vs{ font-size:9px;color:#4A3810;font-weight:700;letter-spacing:2px; }
+.tb-lc-rival-matt{ color:#2E7DF7; }
+.tb-lc-rival-ryan{ color:#E63B3B; }
+.tb-lc-rival-leader{
+    font-size:10px;font-weight:700;letter-spacing:2px;
+    text-align:center;margin-bottom:8px;
+}
+.tb-lc-win-bar-wrap{
+    background:rgba(255,255,255,.04);border-radius:4px;height:5px;
+    overflow:hidden;display:flex;margin-bottom:4px;
+}
+.tb-lc-win-bar-matt{ background:#2E7DF7;border-radius:4px 0 0 4px; }
+.tb-lc-win-bar-ryan{ background:#E63B3B;border-radius:0 4px 4px 0; }
+.tb-lc-win-labels{
+    display:flex;justify-content:space-between;font-size:9px;color:#5A4008;
+}
+.tb-lc-glance-grid{ display:grid;grid-template-columns:1fr 1fr;gap:6px; }
+.tb-lc-glance-tile{
+    background:rgba(10,8,0,.45);border:1px solid rgba(180,130,20,.10);
+    border-radius:7px;padding:7px 8px;text-align:center;
+}
+.tb-lc-glance-icon{ font-size:16px;display:block;margin-bottom:1px; }
+.tb-lc-glance-val{ font-size:18px;font-weight:900;color:#D4AF37;line-height:1; }
+.tb-lc-glance-label{
+    font-size:9px;font-weight:700;letter-spacing:1px;
+    color:#5A4008;text-transform:uppercase;margin-top:2px;
+}
+.tb-lc-moment{
+    display:flex;gap:9px;align-items:flex-start;
+    padding:10px 0;border-bottom:1px solid rgba(180,130,20,.07);
+}
+.tb-lc-moment:last-child{ border-bottom:none; }
+
+/* Dynasty Pulse — mini stat grid inside Legacy Facts panel */
+.tb-lc-pulse-divider{
+    font-size:8px;font-weight:800;letter-spacing:3px;color:#4A3810;
+    text-transform:uppercase;text-align:center;
+    border-top:1px solid rgba(180,130,20,.16);padding-top:14px;margin:16px 0 12px;
+}
+.tb-lc-pulse-grid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+}
+.tb-lc-pulse-tile{
+    background:rgba(10,8,0,.45);border:1px solid rgba(180,130,20,.12);
+    border-radius:9px;padding:18px 8px;text-align:center;
+}
+.tb-lc-pulse-val{
+    font-size:28px;font-weight:900;line-height:1;margin-bottom:6px;
+}
+.tb-lc-pulse-lbl{
+    font-size:8px;font-weight:700;letter-spacing:1.5px;
+    color:#6A4C08;text-transform:uppercase;
+}
+
+/* Standalone Legacy Facts wrapper — centers and constrains the panel */
+.tb-lc-facts-solo-wrap{ max-width:860px; margin:0 auto; }
+.tb-lc-facts-solo-wrap .tb-lc-moments-wrap{ justify-content:flex-start; }
+.tb-lc-facts-solo-wrap .tb-lc-moment{ padding:8px 0; }
+
+.tb-lc-moment-dot{
+    width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;
+}
+.tb-lc-moment-dot-matt{ background:#2E7DF7; }
+.tb-lc-moment-dot-ryan{ background:#E63B3B; }
+.tb-lc-moment-dot-dynasty{ background:#D4AF37; }
+.tb-lc-moment-text{ font-size:15px;color:#9A7820;line-height:1.6; }
+
+/* --- Exhibit Cards --------------------------------------------- */
+.tb-exhibit-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:8px 0;
+}
+.tb-exhibit-card{
+    background:linear-gradient(180deg,#100C00,#080600);
+    border:1px solid rgba(180,130,20,.22);border-radius:14px;
+    padding:18px 14px 14px;text-align:center;cursor:pointer;
+    transition:border-color .2s,transform .2s,box-shadow .2s;
+}
+.tb-exhibit-card:hover{
+    border-color:rgba(212,175,55,.6);
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(212,175,55,.12);
+}
+.tb-exhibit-unavailable{ opacity:.5;cursor:default; }
+.tb-exhibit-unavailable:hover{
+    transform:none;box-shadow:none;border-color:rgba(180,130,20,.22);
+}
+.tb-exhibit-icon{
+    font-size:34px;display:block;margin-bottom:9px;
+    filter:drop-shadow(0 0 8px rgba(212,175,55,.3));
+}
+.tb-exhibit-title{
+    font-size:11px;font-weight:800;letter-spacing:2px;
+    color:#D4AF37;text-transform:uppercase;margin-bottom:4px;
+}
+.tb-exhibit-sub{ font-size:10px;color:#7A5C08;margin-bottom:11px;line-height:1.4; }
+.tb-exhibit-btn{
+    font-size:8px;font-weight:800;letter-spacing:2px;color:#8B6914;
+    text-transform:uppercase;border-top:1px solid rgba(180,130,20,.18);
+    padding-top:9px;
+}
+.tb-exhibit-card:hover .tb-exhibit-btn{ color:#D4AF37; }
+.tb-exhibit-badge{ font-size:8px;font-weight:700;letter-spacing:2px;color:#5A4008;margin-bottom:5px; }
+html,body{scroll-behavior:smooth}
+a.tb-exhibit-anchor{text-decoration:none;color:inherit;display:block}
+a.tb-exhibit-anchor:hover{text-decoration:none}
+
+/* --- GOAT Race Leaderboard Row (reusable) ---------------------- */
+.tb-lc-leader-row{
+    display:flex;align-items:center;gap:9px;
+    padding:7px 10px;border-radius:var(--radius-sm);margin-bottom:3px;
+    background:rgba(10,8,0,.4);border:1px solid rgba(180,130,20,.07);
+    transition:border-color .15s;
+}
+.tb-lc-leader-row:hover{ border-color:rgba(180,130,20,.25); }
+.tb-lc-leader-rank{
+    font-size:13px;font-weight:900;color:#8B6914;min-width:20px;text-align:center;
+}
+.tb-lc-leader-row:first-child .tb-lc-leader-rank{ color:#D4AF37;font-size:15px; }
+.tb-lc-leader-row:nth-child(2) .tb-lc-leader-rank{ color:#C0C0C0; }
+.tb-lc-leader-row:nth-child(3) .tb-lc-leader-rank{ color:#CD7F32; }
+.tb-lc-leader-info{ flex:1;min-width:0; }
+.tb-lc-leader-name{
+    font-size:13px;font-weight:700;color:#E8D89A;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tb-lc-leader-meta{ font-size:10px;margin-top:1px; }
+.tb-lc-leader-bar-wrap{
+    width:60px;background:rgba(255,255,255,.05);
+    border-radius:3px;height:4px;overflow:hidden;flex-shrink:0;
+}
+.tb-lc-leader-bar{ height:100%;border-radius:3px; }
+.tb-lc-bar-matt{ background:linear-gradient(90deg,#1C63D5,#2E7DF7); }
+.tb-lc-bar-ryan{ background:linear-gradient(90deg,#C9272A,#E63B3B); }
+.tb-lc-leader-score{
+    font-size:15px;font-weight:900;color:#D4AF37;min-width:26px;text-align:right;
+}
+
+/* --- Award Count Tiles (reusable) ------------------------------ */
+.tb-award-grid{ display:grid;grid-template-columns:repeat(4,1fr);gap:7px; }
+/* 2-column variant for lobby panel — fills column height with 4 rows */
+.tb-award-grid-2col{ grid-template-columns:repeat(2,1fr);gap:10px; }
+.tb-award-tile{
+    background:rgba(10,8,0,.5);border:1px solid rgba(180,130,20,.13);
+    border-radius:9px;padding:14px 6px;text-align:center;
+    transition:border-color .15s;
+}
+.tb-award-tile:hover{ border-color:rgba(212,175,55,.4); }
+.tb-award-icon{ font-size:22px;display:block;margin-bottom:4px; }
+.tb-award-count{ font-size:24px;font-weight:900;color:#D4AF37;line-height:1; }
+.tb-award-label{
+    font-size:9px;font-weight:700;letter-spacing:1px;
+    color:#7A5C08;text-transform:uppercase;margin-top:4px;
+}
+.tb-award-grid-2col .tb-award-icon{ font-size:26px;margin-bottom:5px; }
+.tb-award-grid-2col .tb-award-count{ font-size:28px; }
+.tb-award-grid-2col .tb-award-tile{ padding:18px 8px; }
+
+/* --- Greatest Classes lobby row -------------------------------- */
+.tb-lc-class-row{
+    display:flex;align-items:center;gap:9px;
+    padding:7px 10px;border-radius:var(--radius-sm);margin-bottom:3px;
+    background:rgba(10,8,0,.4);border:1px solid rgba(180,130,20,.07);
+}
+.tb-lc-class-rank{ font-size:11px;font-weight:900;color:#8B6914;min-width:16px; }
+.tb-lc-class-year{ font-size:17px;font-weight:900;color:#E8D89A;min-width:44px; }
+.tb-lc-class-avgs{ flex:1;font-size:10px;color:#7A5C08; }
+
+/* --- Legacy Spotlight Card (reusable) -------------------------- */
+.tb-lc-spotlight{
+    background:linear-gradient(180deg,rgba(18,14,0,.96),rgba(8,6,0,.99));
+    border:1px solid rgba(180,130,20,.28);border-top:3px solid #D4AF37;
+    border-radius:14px;padding:18px 16px;
+}
+.tb-spotlight-header{
+    font-size:10px;font-weight:800;letter-spacing:3px;
+    color:#D4AF37;text-transform:uppercase;margin-bottom:2px;
+}
+.tb-spotlight-sub{
+    font-size:9px;color:#5A4008;letter-spacing:2px;
+    text-transform:uppercase;margin-bottom:12px;
+}
+.tb-spotlight-name{
+    font-size:18px;font-weight:900;color:#E8D89A;
+    letter-spacing:1px;margin-bottom:7px;line-height:1.2;
+}
+.tb-spotlight-meta{
+    display:flex;gap:5px;align-items:center;margin-bottom:10px;flex-wrap:wrap;
+}
+.tb-spotlight-score-row{
+    display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap;
+}
+.tb-spotlight-score-label{ font-size:11px;color:#7A5C08;font-weight:700;letter-spacing:1px; }
+.tb-spotlight-score-val{ font-size:26px;font-weight:900;color:#D4AF37;line-height:1; }
+.tb-spotlight-draft{ font-size:11px;color:#5A4008;margin-bottom:10px; }
+.tb-spotlight-fact{
+    font-size:12px;color:#9A7820;margin-bottom:3px;
+    padding:3px 0;border-bottom:1px solid rgba(180,130,20,.07);
+}
+.tb-spotlight-fact:last-child{ border-bottom:none; }
+.tb-spotlight-awards{ display:flex;flex-wrap:wrap;gap:3px;margin-top:7px; }
+
+/* --- Museum Section Divider ------------------------------------ */
+.tb-lc-divider{
+    text-align:center;color:#5A4008;font-size:9px;font-weight:800;
+    letter-spacing:4px;text-transform:uppercase;
+    padding:22px 0 10px;position:relative;
+}
+.tb-lc-divider::before{
+    content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(180,130,20,.2) 15%,rgba(180,130,20,.2) 85%,transparent);
+    z-index:0;
+}
+.tb-lc-divider span{
+    background:var(--bg-app);padding:0 16px;position:relative;z-index:1;
+}
+
+/* --- Exhibit Room Containers ----------------------------------- */
+.tb-lc-room{
+    background:linear-gradient(180deg,rgba(12,9,0,.6),rgba(6,4,0,.8));
+    border:1px solid rgba(180,130,20,.16);border-radius:var(--radius-lg);
+    padding:22px 22px 18px;margin-bottom:14px;
+}
+.tb-lc-room-header{
+    font-size:11px;font-weight:800;letter-spacing:4px;
+    color:#D4AF37;text-transform:uppercase;margin-bottom:2px;
+}
+.tb-lc-room-sub{
+    font-size:11px;color:#5A4008;letter-spacing:2px;text-transform:uppercase;
+    margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(180,130,20,.10);
+}
+/* Exhibit room headers centered — scoped so lobby column headers stay left-aligned */
+.tb-lc-room .tb-lc-room-header{ text-align:center; }
+.tb-lc-room .tb-lc-room-sub{ text-align:center; }
+
+/* Mount Rushmore */
+.tb-rushmore-grid{ display:grid;grid-template-columns:repeat(4,1fr);gap:9px; }
+.tb-rushmore-card{
+    background:rgba(10,8,0,.5);border:1px solid rgba(180,130,20,.12);
+    border-radius:10px;padding:11px 9px;text-align:center;
+    transition:border-color .15s;
+}
+.tb-rushmore-card:hover{ border-color:rgba(212,175,55,.4); }
+.tb-rushmore-rank{ font-size:20px;font-weight:900;color:#D4AF37;margin-bottom:5px; }
+.tb-rushmore-name{
+    font-size:12px;font-weight:700;color:#E8D89A;
+    margin-bottom:4px;line-height:1.2;
+}
+.tb-rushmore-score{ font-size:17px;font-weight:900;color:#D4AF37;margin-bottom:3px; }
+.tb-rushmore-meta{ font-size:9px;color:#5A4008; }
+
+/* All-Franchise */
+.tb-af-table{ display:grid;grid-template-columns:1fr;gap:5px; }
+.tb-af-row{
+    display:flex;align-items:center;gap:8px;padding:7px 10px;
+    background:rgba(10,8,0,.4);border:1px solid rgba(180,130,20,.07);border-radius:7px;
+}
+.tb-af-pos{
+    font-size:10px;font-weight:700;color:#7A5C08;min-width:42px;letter-spacing:1px;
+}
+.tb-af-info{ flex:1; }
+.tb-af-name{ font-size:12px;font-weight:700;color:#E8D89A; }
+.tb-af-score{ font-size:11px;color:#7A5C08; }
+
+/* Hall of Shame */
+.tb-shame-row{
+    display:flex;align-items:center;gap:10px;padding:8px 12px;
+    background:rgba(15,5,5,.5);border:1px solid rgba(120,20,20,.14);
+    border-radius:var(--radius-sm);margin-bottom:3px;
+}
+.tb-shame-rank{ font-size:11px;font-weight:900;color:#4A1010;min-width:20px; }
+.tb-shame-name{ flex:1;font-size:12px;font-weight:700;color:#CC8888; }
+.tb-shame-pos{ font-size:10px;color:#6A3030;min-width:28px; }
+.tb-shame-owner{ font-size:10px; }
+.tb-shame-score{ font-size:14px;font-weight:900;color:#8B2020; }
+
+/* Legacy Hall (Franchise players) */
+.tb-hof-grid{ display:grid;grid-template-columns:repeat(3,1fr);gap:7px; }
+.tb-hof-card{
+    background:rgba(10,8,0,.5);border:1px solid rgba(180,130,20,.10);
+    border-left:3px solid #D4AF37;border-radius:var(--radius-sm);padding:9px 11px;
+    display:flex;align-items:center;justify-content:space-between;gap:6px;
+}
+.tb-hof-name{ font-size:11px;font-weight:700;color:#E8D89A;flex:1;line-height:1.2; }
+.tb-hof-meta{ display:flex;flex-direction:column;gap:2px; }
+.tb-hof-score{ font-size:13px;font-weight:900;color:#D4AF37; }
+
+/* Record Book */
+.tb-record-grid{ display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+.tb-record-card{
+    background:rgba(10,8,0,.45);border:1px solid rgba(180,130,20,.10);
+    border-radius:9px;padding:11px 12px;
+}
+.tb-record-label{
+    font-size:8px;font-weight:800;letter-spacing:2px;color:#7A5C08;
+    text-transform:uppercase;margin-bottom:4px;
+}
+.tb-record-val{ font-size:16px;font-weight:900;color:#D4AF37;margin-bottom:2px; }
+.tb-record-detail{ font-size:10px;color:#5A4008; }
+
+/* --- Dynasty Timeline (reusable) ------------------------------- */
+.tb-timeline-wrap{ overflow-x:auto;padding:6px 0 14px; }
+.tb-timeline-track{
+    display:flex;align-items:flex-start;gap:0;
+    min-width:max-content;padding:8px 12px;position:relative;
+}
+.tb-timeline-track::before{
+    content:'';position:absolute;top:21px;left:12px;right:12px;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(180,130,20,.28) 4%,rgba(180,130,20,.28) 96%,transparent);
+}
+.tb-timeline-node{
+    display:flex;flex-direction:column;align-items:center;
+    min-width:104px;padding:0 6px;position:relative;z-index:1;
+}
+.tb-timeline-dot{
+    width:12px;height:12px;border-radius:50%;
+    border:2px solid rgba(180,130,20,.25);background:var(--bg-app);
+    margin-bottom:7px;transition:transform .15s;
+}
+.tb-timeline-node:hover .tb-timeline-dot{ transform:scale(1.35); }
+.tb-timeline-matt .tb-timeline-dot{ border-color:#2E7DF7;background:rgba(46,125,247,.15); }
+.tb-timeline-ryan .tb-timeline-dot{ border-color:#E63B3B;background:rgba(230,59,59,.15); }
+.tb-timeline-tie  .tb-timeline-dot{ border-color:#D4AF37;background:rgba(212,175,55,.1); }
+.tb-timeline-pending .tb-timeline-dot{ border-color:rgba(90,64,8,.3);background:#050300; }
+.tb-timeline-milestone .tb-timeline-dot{
+    width:18px;height:18px;
+    box-shadow:0 0 10px currentColor;
+}
+.tb-timeline-year{ font-size:11px;font-weight:800;margin-bottom:3px; }
+.tb-timeline-matt .tb-timeline-year{ color:#2E7DF7; }
+.tb-timeline-ryan .tb-timeline-year{ color:#E63B3B; }
+.tb-timeline-tie  .tb-timeline-year{ color:#D4AF37; }
+.tb-timeline-pending .tb-timeline-year{ color:#4A3810; }
+.tb-timeline-label{
+    font-size:8px;color:#5A4008;text-align:center;
+    max-width:76px;line-height:1.3;
+}
+.tb-timeline-milestone .tb-timeline-label{ color:#9A7820;font-weight:700; }
+
+/* ================================================================
+   MAN STATUS — Fight Card / Arena Identity
+   All .tb-ms-* classes defined here ONLY.
+   Arena: near-black bg, blue-left / red-right atmospheric split.
+================================================================ */
+
+/* --- Main Event Arena Hero --- */
+.tb-ms-arena{
+    position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#000510 0%,#010208 60%,#000000 100%);
+    border:1px solid rgba(80,90,130,.22);
+    border-radius:20px;margin-bottom:14px;
+}
+.tb-ms-arena-blue-glow{
+    position:absolute;left:-5%;top:0;bottom:0;width:52%;
+    background:radial-gradient(ellipse at left center,rgba(var(--ms-blue-rgb),.28) 0%,transparent 65%);
+    filter:blur(110px);
+    pointer-events:none;
+}
+.tb-ms-arena-red-glow{
+    position:absolute;right:-5%;top:0;bottom:0;width:52%;
+    background:radial-gradient(ellipse at right center,rgba(var(--ms-red-rgb),.28) 0%,transparent 65%);
+    filter:blur(110px);
+    pointer-events:none;
+}
+.tb-ms-arena-inner{ position:relative;z-index:1;text-align:center;padding:26px 24px 22px; }
+.tb-ms-eyebrow{
+    font-size:9px;font-weight:800;letter-spacing:4px;
+    color:#2A3050;text-transform:uppercase;margin-bottom:6px;
+}
+.tb-ms-title{
+    font-size:54px;font-weight:900;color:var(--text-primary);
+    letter-spacing:9px;line-height:1;
+    text-shadow:0 0 50px rgba(80,120,255,.35),0 0 18px rgba(255,80,80,.18),0 3px 12px rgba(0,0,0,.9);
+    margin-bottom:5px;
+}
+.tb-ms-tagline{
+    font-size:10px;font-weight:700;letter-spacing:3px;
+    color:#3A4060;text-transform:uppercase;margin-bottom:22px;
+}
+
+/* Corner layout */
+.tb-ms-corners{ display:flex;align-items:center;justify-content:center; }
+.tb-ms-corner{ flex:1;padding:14px 20px;text-align:center;max-width:240px; }
+.tb-ms-corner-matt{ border-right:1px solid rgba(var(--ms-blue-rgb),.14); }
+.tb-ms-corner-ryan{ border-left: 1px solid rgba(var(--ms-red-rgb),.14); }
+.tb-ms-corner-label{
+    font-size:8px;font-weight:800;letter-spacing:3px;
+    text-transform:uppercase;margin-bottom:6px;
+}
+.tb-ms-corner-matt .tb-ms-corner-label{ color:rgba(var(--ms-blue-rgb),.55); }
+.tb-ms-corner-ryan .tb-ms-corner-label{ color:rgba(var(--ms-red-rgb),.55); }
+.tb-ms-corner-name{
+    font-size:34px;font-weight:900;letter-spacing:4px;line-height:1;margin-bottom:5px;
+}
+.tb-ms-corner-matt .tb-ms-corner-name{ color:var(--ms-blue);text-shadow:0 0 28px rgba(var(--ms-blue-rgb),.5); }
+.tb-ms-corner-ryan .tb-ms-corner-name{ color:var(--ms-red);text-shadow:0 0 28px rgba(var(--ms-red-rgb),.5); }
+.tb-ms-corner-record{ font-size:10px;color:#2A3050;letter-spacing:2px; }
+
+/* Central tally */
+.tb-ms-tally{ padding:0 28px;flex-shrink:0;text-align:center; }
+.tb-ms-tally-row{
+    display:flex;align-items:center;gap:6px;
+    justify-content:center;margin-bottom:5px;
+}
+.tb-ms-tally-num{ font-size:68px;font-weight:900;line-height:1; }
+.tb-ms-tally-matt{ color:var(--ms-blue);text-shadow:0 0 30px rgba(var(--ms-blue-rgb),.5); }
+.tb-ms-tally-ryan{ color:var(--ms-red);text-shadow:0 0 30px rgba(var(--ms-red-rgb),.5); }
+.tb-ms-tally-sep{ font-size:36px;font-weight:900;color:#1A2035; }
+.tb-ms-tally-sub{
+    font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;
+}
+.tb-ms-tally-dot{ margin:0 6px;color:#1A2035; }
+.tb-ms-tally-ties{ color:#5A4A10; }
+.tb-ms-tally-pending{ color:#1E2535; }
+.tb-ms-leader-badge{
+    display:inline-block;padding:5px 16px;border-radius:20px;
+    font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+}
+.tb-ms-leader-matt{ background:rgba(var(--ms-blue-rgb),.10);border:1px solid rgba(var(--ms-blue-rgb),.35);color:var(--ms-blue); }
+.tb-ms-leader-ryan{ background:rgba(var(--ms-red-rgb),.10);border:1px solid rgba(var(--ms-red-rgb),.35);color:var(--ms-red); }
+
+/* --- Series Scorecard Strip --- */
+.tb-ms-scorecard{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:8px;margin-bottom:14px;
+}
+.tb-ms-sc-tile{
+    background:rgba(6,8,16,.8);border:1px solid rgba(80,90,130,.12);
+    border-radius:10px;padding:11px 12px;text-align:center;
+}
+.tb-ms-sc-label{
+    font-size:8px;font-weight:800;letter-spacing:2px;
+    color:#2A3050;text-transform:uppercase;margin-bottom:5px;
+}
+.tb-ms-sc-val{ font-size:22px;font-weight:900;color:var(--text-secondary);line-height:1; }
+.tb-ms-sc-val-matt{ color:var(--ms-blue); }
+.tb-ms-sc-val-ryan{ color:var(--ms-red); }
+.tb-ms-sc-detail{ font-size:9px;color:#1E2535;margin-top:3px; }
+
+/* --- Section Divider --- */
+.tb-ms-divider{
+    text-align:center;color:#2A3050;font-size:9px;
+    font-weight:800;letter-spacing:4px;text-transform:uppercase;
+    padding:18px 0 10px;position:relative;
+}
+.tb-ms-divider::before{
+    content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(var(--ms-blue-rgb),.10) 15%,rgba(var(--ms-red-rgb),.10) 85%,transparent);
+    z-index:0;
+}
+.tb-ms-divider span{
+    background:#020308;padding:0 16px;position:relative;z-index:1;
+}
+
+/* --- Tale of the Tape header --- */
+.tb-ms-tot-wrap{
+    border:1px solid rgba(80,90,130,.18);border-radius:var(--radius-md);
+    overflow:hidden;margin-bottom:14px;
+}
+.tb-ms-tot-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px 12px;
+    background:linear-gradient(90deg,
+        rgba(var(--ms-blue-rgb),.07) 0%,rgba(6,8,16,0) 40%,
+        rgba(6,8,16,0) 60%,rgba(var(--ms-red-rgb),.07) 100%);
+    border-bottom:1px solid rgba(80,90,130,.12);
+}
+.tb-ms-tot-side{ flex:1; }
+.tb-ms-tot-side-right{ text-align:right; }
+.tb-ms-tot-fighter{ font-size:16px;font-weight:800;letter-spacing:1px;margin-bottom:4px; }
+.tb-ms-tot-fighter-matt{ color:var(--ms-blue); }
+.tb-ms-tot-fighter-ryan{ color:var(--ms-red); }
+.tb-ms-tot-pos{ font-size:10px;color:#2A3050; }
+.tb-ms-tot-center{ text-align:center;flex-shrink:0;padding:0 16px; }
+.tb-ms-tot-vs{ font-size:22px;font-weight:900;color:#1A2035;letter-spacing:4px; }
+.tb-ms-tot-year-label{
+    font-size:9px;font-weight:800;color:#2A3050;
+    letter-spacing:2px;text-transform:uppercase;
+}
+.tb-ms-tot-result{ font-size:10px;color:#3A4060;letter-spacing:1px;margin-top:2px; }
+
+/* comparison_panel inside the tale-of-tape wrap */
+.tb-ms-tot-wrap .tb-comparison-panel{
+    border:none;border-radius:0;
+    background:rgba(4,6,12,.9);
+}
+
+/* --- Bout Cards --- */
+.tb-ms-bout-card{
+    display:grid;
+    grid-template-columns:52px 1fr 28px 1fr 110px;
+    align-items:center;gap:8px;
+    padding:9px 12px;
+    border-radius:9px;
+    border:1px solid rgba(80,90,130,.10);
+    border-left:3px solid transparent;
+    background:rgba(4,6,12,.75);
+    margin-bottom:4px;
+    transition:border-color .15s, background .15s;
+}
+.tb-ms-bout-card:hover{ background:rgba(8,10,20,.9);border-color:rgba(80,90,130,.24); }
+.tb-ms-bout-matt-win{ border-left-color:rgba(var(--ms-blue-rgb),.55); }
+.tb-ms-bout-ryan-win{ border-left-color:rgba(var(--ms-red-rgb),.55); }
+.tb-ms-bout-tie     { border-left-color:rgba(180,130,20,.45); }
+.tb-ms-bout-pending { border-left-color:rgba(40,45,60,.5);opacity:.55; }
+
+.tb-ms-bout-year{
+    font-size:12px;font-weight:800;color:#2A3050;
+    text-align:center;letter-spacing:1px;
+}
+.tb-ms-bout-matt-win .tb-ms-bout-year{ color:rgba(var(--ms-blue-rgb),.65); }
+.tb-ms-bout-ryan-win .tb-ms-bout-year{ color:rgba(var(--ms-red-rgb),.65); }
+.tb-ms-bout-tie      .tb-ms-bout-year{ color:rgba(180,130,20,.75); }
+.tb-ms-bout-vs{
+    font-size:8px;font-weight:800;color:#14192A;
+    text-align:center;letter-spacing:2px;
+}
+
+/* Pick blocks */
+.tb-ms-pick{ min-width:0; }
+.tb-ms-pick-matt{ text-align:right; }
+.tb-ms-pick-ryan{ text-align:left; }
+.tb-ms-pick-name{
+    font-size:13px;font-weight:700;color:#8090A8;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tb-ms-pick-winner .tb-ms-pick-name{ color:var(--text-secondary); }
+.tb-ms-pick-tbd{ font-size:11px;color:#1E2535;font-style:italic; }
+.tb-ms-pick-pos{
+    font-size:8px;font-weight:700;color:#1E2535;
+    letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;
+}
+.tb-ms-pick-score{ font-size:16px;font-weight:900;line-height:1; }
+.tb-ms-pick-resume{
+    font-size:8px;color:#2A3050;margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tb-ms-pick-notes{
+    font-size:8px;color:#1A2030;font-style:italic;margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tb-ms-pick-matt .tb-ms-pick-resume,
+.tb-ms-pick-matt .tb-ms-pick-notes{ direction:rtl;text-align:left; }
+
+/* Result blocks */
+.tb-ms-result{ text-align:center;min-width:100px; }
+.tb-ms-result-winner{
+    font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+}
+.tb-ms-result-matt .tb-ms-result-winner{ color:var(--ms-blue); }
+.tb-ms-result-ryan .tb-ms-result-winner{ color:var(--ms-red); }
+.tb-ms-result-margin{ font-size:11px;font-weight:700;margin-top:2px; }
+.tb-ms-result-draw{
+    font-size:10px;font-weight:800;color:#D4AF37;letter-spacing:2px;
+}
+.tb-ms-result-upcoming{ font-size:10px;font-weight:800;color:#1E2535;letter-spacing:2px; }
+.tb-ms-result-tbd{ font-size:9px;color:#141820;margin-top:2px;letter-spacing:1px; }
+
+/* --- Momentum strip (reuses tb-timeline-* from Legacy) --- */
+/* Override dot sizing for bout nodes — smaller than the year timeline */
+.tb-ms-momentum .tb-timeline-dot{ width:10px;height:10px; }
+.tb-ms-momentum .tb-timeline-year{ font-size:9px; }
+.tb-ms-momentum .tb-timeline-label{ font-size:7px;max-width:88px; }
+.tb-ms-momentum .tb-timeline-node{ min-width:88px;padding:0 4px; }
+.tb-ms-momentum .tb-timeline-track::before{
+    background:linear-gradient(90deg,
+        transparent,rgba(var(--ms-blue-rgb),.12) 10%,rgba(var(--ms-red-rgb),.12) 90%,transparent);
+}
+
+/* Scoped hot-color overrides — timeline nodes inside momentum strip */
+.tb-ms-momentum .tb-timeline-matt .tb-timeline-dot{ border-color:var(--ms-blue);background:rgba(var(--ms-blue-rgb),.15); }
+.tb-ms-momentum .tb-timeline-matt .tb-timeline-year{ color:var(--ms-blue); }
+.tb-ms-momentum .tb-timeline-ryan .tb-timeline-dot{ border-color:var(--ms-red);background:rgba(var(--ms-red-rgb),.15); }
+.tb-ms-momentum .tb-timeline-ryan .tb-timeline-year{ color:var(--ms-red); }
+
+/* Scoped hot-color overrides — .tb-matt/.tb-ryan used in bout-card scores and "by X" margin */
+.tb-ms-bout-card .tb-matt{ color:var(--ms-blue); }
+.tb-ms-bout-card .tb-ryan{ color:var(--ms-red); }
+
+/* Scoped hot-color overrides — comparison winner highlight in Tale of the Tape */
+.tb-ms-tot-wrap .tb-cr-matt-win{ color:var(--ms-blue) !important; }
+.tb-ms-tot-wrap .tb-cr-ryan-win{ color:var(--ms-red) !important; }
+
+/* Scoped hot-color overrides — owner chips inside Tale of the Tape */
+.tb-ms-tot-wrap .tb-chip-matt{ background:rgba(var(--ms-blue-rgb),.15);border-color:rgba(var(--ms-blue-rgb),.35);color:var(--ms-blue); }
+.tb-ms-tot-wrap .tb-chip-ryan{ background:rgba(var(--ms-red-rgb),.15);border-color:rgba(var(--ms-red-rgb),.35);color:var(--ms-red); }
