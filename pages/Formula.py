@@ -25,65 +25,65 @@ render_sidebar(active="Formula")
 # ── Scoped CSS ────────────────────────────────────────────────────────────────
 # All classes use the fr- prefix to avoid conflicts with other pages.
 st.markdown("""<style>
-.fr-lbl{font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;
+.fr-lbl{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;
 color:#2E7DFF;border-bottom:1px solid rgba(46,125,255,.15);padding-bottom:8px;
 margin-bottom:18px;text-align:center;}
-.fr-plain{font-size:13px;line-height:1.75;color:#8090aa;text-align:center;
+.fr-plain{font-size:15px;line-height:1.75;color:#8090aa;text-align:center;
 max-width:640px;margin:0 auto 26px;}
 .fr-fairness{background:rgba(10,14,25,.6);border:1px solid rgba(255,255,255,.08);
 border-radius:10px;padding:16px 22px;display:flex;align-items:flex-start;gap:14px;
 margin-bottom:36px;}
 .fr-fairness-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
-.fr-fairness-text{font-size:12px;color:#4a6080;line-height:1.75;}
+.fr-fairness-text{font-size:14px;color:#4a6080;line-height:1.75;}
 .fr-fairness-text strong{color:#8090aa;}
 
 .fr-formula-box{background:rgba(10,14,25,.85);border:1px solid rgba(46,125,255,.2);
 border-left:3px solid #2E7DFF;border-radius:10px;padding:22px 26px;margin-bottom:26px;}
-.fr-formula-eq{font-size:16px;font-weight:800;color:#fff;font-family:'Courier New',monospace;
+.fr-formula-eq{font-size:18px;font-weight:800;color:#fff;font-family:'Courier New',monospace;
 margin-bottom:12px;text-align:center;line-height:1.5;}
 .fr-formula-eq .f-blue{color:#2E7DFF;}
 .fr-formula-eq .f-gold{color:#D4AF37;}
-.fr-formula-note{font-size:11px;color:#4a6080;line-height:1.65;text-align:center;}
+.fr-formula-note{font-size:13px;color:#4a6080;line-height:1.65;text-align:center;}
 .fr-formula-note strong{color:#7090aa;}
 
 .fr-award-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;}
 .fr-award-tile{background:rgba(10,14,25,.7);border:1px solid rgba(255,255,255,.06);
 border-radius:9px;padding:14px 6px;text-align:center;}
 .fr-award-icon{font-size:20px;margin-bottom:4px;}
-.fr-award-pts{font-size:22px;font-weight:900;color:#D4AF37;line-height:1;}
-.fr-award-lbl{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+.fr-award-pts{font-size:26px;font-weight:900;color:#D4AF37;line-height:1;}
+.fr-award-lbl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
 color:#4a6080;margin-top:4px;}
-.fr-cap-note{text-align:center;font-size:10px;color:#4a6080;margin-bottom:6px;}
+.fr-cap-note{text-align:center;font-size:12px;color:#4a6080;margin-bottom:6px;}
 
 .fr-tier-row{display:flex;align-items:center;gap:10px;background:rgba(10,14,25,.6);
 border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 14px;margin-bottom:6px;}
-.fr-tier-badge{font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
-padding:4px 10px;border-radius:4px;min-width:130px;text-align:center;flex-shrink:0;}
+.fr-tier-badge{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+padding:4px 10px;border-radius:4px;min-width:140px;text-align:center;flex-shrink:0;}
 .fr-tier-legend{background:rgba(212,175,55,.15);color:#D4AF37;border:1px solid rgba(212,175,55,.3);}
 .fr-tier-franchise{background:rgba(245,158,11,.15);color:#F59E0B;border:1px solid rgba(245,158,11,.3);}
 .fr-tier-hes{background:rgba(46,125,255,.15);color:#2E7DFF;border:1px solid rgba(46,125,255,.3);}
 .fr-tier-starter{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);}
 .fr-tier-contrib{background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid rgba(148,163,184,.3);}
 .fr-tier-bust{background:rgba(230,59,59,.15);color:#E63B3B;border:1px solid rgba(230,59,59,.3);}
-.fr-tier-range{font-size:13px;font-weight:700;color:#8090aa;flex:1;text-align:right;}
-.fr-tier-count{font-size:11px;color:#4a6080;width:74px;text-align:right;flex-shrink:0;}
+.fr-tier-range{font-size:15px;font-weight:700;color:#8090aa;flex:1;text-align:right;}
+.fr-tier-count{font-size:13px;color:#4a6080;width:80px;text-align:right;flex-shrink:0;}
 
 .fr-ex-box{background:rgba(10,14,25,.8);border:1px solid rgba(255,255,255,.08);
 border-radius:10px;padding:22px 26px;}
 .fr-ex-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;
 padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.07);}
-.fr-ex-name{font-size:20px;font-weight:900;color:#fff;}
-.fr-ex-pill{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+.fr-ex-name{font-size:22px;font-weight:900;color:#fff;}
+.fr-ex-pill{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
 padding:3px 9px;border-radius:4px;}
 .fr-ex-pill-ryan{background:rgba(230,59,59,.15);color:#E63B3B;border:1px solid rgba(230,59,59,.3);}
 .fr-ex-pill-matt{background:rgba(46,125,247,.15);color:#2E7DF7;border:1px solid rgba(46,125,247,.3);}
-.fr-ex-meta{font-size:11px;color:#4a6080;}
-.fr-ex-step-lbl{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+.fr-ex-meta{font-size:13px;color:#4a6080;}
+.fr-ex-step-lbl{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
 color:#4a6080;margin-bottom:8px;}
 .fr-ex-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
 .fr-ex-chip{background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);
-border-radius:5px;padding:5px 11px;font-size:11px;font-weight:700;color:#D4AF37;}
-.fr-ex-math{font-family:'Courier New',monospace;font-size:13px;color:#8090aa;
+border-radius:5px;padding:5px 11px;font-size:13px;font-weight:700;color:#D4AF37;}
+.fr-ex-math{font-family:'Courier New',monospace;font-size:15px;color:#8090aa;
 line-height:2;background:rgba(0,0,0,.25);border-radius:8px;padding:14px 18px;margin-bottom:16px;}
 .fr-ex-math .hi{color:#e8eaf0;font-weight:800;}
 .fr-ex-math .gold{color:#D4AF37;}
@@ -92,10 +92,10 @@ line-height:2;background:rgba(0,0,0,.25);border-radius:8px;padding:14px 18px;mar
 .fr-ex-result{display:flex;align-items:center;gap:20px;background:rgba(46,125,255,.06);
 border:1px solid rgba(46,125,255,.15);border-radius:8px;padding:14px 20px;}
 .fr-ex-result-divider{width:1px;height:48px;background:rgba(255,255,255,.08);flex-shrink:0;}
-.fr-ex-result-lbl{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+.fr-ex-result-lbl{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
 color:#4a6080;margin-bottom:4px;}
-.fr-ex-result-val{font-size:34px;font-weight:900;color:#fff;line-height:1;}
-.fr-ex-result-tier{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;}
+.fr-ex-result-val{font-size:36px;font-weight:900;color:#fff;line-height:1;}
+.fr-ex-result-tier{font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;}
 .fr-section-rule{border:none;border-top:1px solid rgba(255,255,255,.07);margin:32px 0 28px;}
 </style>""", unsafe_allow_html=True)
 
@@ -326,4 +326,4 @@ if workbook_exists():
         st.markdown(
             f'<div style="color:#4a6080;font-size:12px;padding:12px;">Example unavailable: {_e}</div>',
             unsafe_allow_html=True,
-        )
+            )

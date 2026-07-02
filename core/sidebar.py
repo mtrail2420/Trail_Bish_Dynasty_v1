@@ -45,6 +45,7 @@ _NAV: list[tuple[str, str, str]] = [
     ("🥊", "Man Status", "pages/ManStatus.py"),
     ("📈", "Analytics",  "pages/Analytics.py"),
     ("📐", "Formula",    "pages/Formula.py"),
+    ("🔥", "Wildcard Boys", "pages/WildcardBoys.py"),
 ]
 
 
@@ -123,6 +124,6 @@ def render_sidebar(active: str = "") -> None:
                 </div>
                 """,
                 unsafe_allow_html=True,
-            )
+             )
         except Exception:
             pass

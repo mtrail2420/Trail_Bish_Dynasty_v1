@@ -120,19 +120,51 @@ def load_man_status() -> pd.DataFrame:
 # Wildcard Boys
 # ---------------------------------------------------
 
+@st.cache_data(show_spinner=False)
 def load_wildcard() -> pd.DataFrame:
     """
-    Returns Wildcard Boys picks with outcome + cooked meter data.
-    Skips header rows — data starts at row 6 (index 6).
-    """
+    Returns the Wildcard Boys picks table, clean and typed.
 
-    df = pd.read_excel(load_workbook(), sheet_name="wildcard boys", header=None)
-    data = df.iloc[6:].copy()
-    data.columns = ["YEAR", "OWNER", "PLAYER", "POSITION", "CATEGORY",
-                    "OUTCOME", "COOKED_METER", "NOTES", "WC_SCORE",
-                    "BLANK", "SCORING_KEY", *[f"_x{i}" for i in range(data.shape[1] - 11)]]
-    return data[["YEAR", "OWNER", "PLAYER", "POSITION", "CATEGORY",
-                 "OUTCOME", "COOKED_METER", "NOTES", "WC_SCORE"]].reset_index(drop=True)
+    Sheet layout: rows 0-5 are metadata/description; row 6 (index 6) is the
+    column-header row; data begins at row 7 (index 7).  We skip directly to
+    row 7 so no header-row filtering is needed downstream.
+
+    Columns returned:
+      YEAR (int), OWNER (str), PLAYER (str), POSITION (str),
+      CATEGORY (str: WC1–WC4), OUTCOME (str | NaN), COOKED_METER (float | NaN),
+      NOTES (str | NaN)
+
+    WC Score is intentionally NOT stored — derive it live as ``100 - COOKED_METER``.
+    Exclude 'Too early' rows from scoreboard averages (see page implementation).
+    Rows where OUTCOME is NaN are 2026-class pending picks (not yet drafted).
+    """
+    workbook = load_workbook()
+    df = pd.read_excel(workbook, sheet_name="wildcard boys", header=None)
+
+    # Skip metadata block and column-header row → data starts at index 7
+    data = df.iloc[7:].copy()
+    n_extra = max(0, data.shape[1] - 11)
+    data.columns = (
+        ["YEAR", "OWNER", "PLAYER", "POSITION", "CATEGORY",
+         "OUTCOME", "COOKED_METER", "NOTES", "_wc_score",
+         "_blank", "_scoring_key"]
+        + [f"_x{i}" for i in range(n_extra)]
+    )
+
+    picks = data[["YEAR", "OWNER", "PLAYER", "POSITION",
+                  "CATEGORY", "OUTCOME", "COOKED_METER", "NOTES"]].copy()
+
+    # Drop rows that are scoring-key table fragments (no PLAYER value)
+    picks = picks[picks["PLAYER"].notna() & (picks["PLAYER"].astype(str).str.strip() != "")].copy()
+
+    # Type coercions
+    picks["YEAR"]         = pd.to_numeric(picks["YEAR"],         errors="coerce")
+    picks["COOKED_METER"] = pd.to_numeric(picks["COOKED_METER"], errors="coerce")
+
+    # Drop any lingering non-year rows
+    picks = picks[picks["YEAR"].notna()].copy()
+
+    return picks.reset_index(drop=True)
 
 
 # ---------------------------------------------------
