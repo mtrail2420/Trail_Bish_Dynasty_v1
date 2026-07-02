@@ -112,31 +112,8 @@ If a new UI pattern appears on this page that another page will also need — ad
 Component discipline: Page files should read like an assembly of named components, not raw HTML. No inline `style=` except for dynamic values (e.g. bar widths computed from data). All CSS lives in `assets/theme.css`.
 Every page must have: a large hero header, strong visual hierarchy, multiple custom cards, color + icons + whitespace, hover effects, and at least one signature feature unique to that page.
 ---
-Engineering Sprints
-Work proceeds in sprints. Each sprint is completed to production quality before the next begins.
-Sprint 1 — Foundation
-Theme
-Sidebar
-Navigation
-Shared components
-CSS
-Sprint 2 — Core Pages
-Dashboard
-Players
-Rankings
-Sprint 3 — Depth Pages
-Draft War Room
-Analytics
-Legacy Center
-Sprint 4 — Centerpiece & Intelligence
-Man Status
-Animations
-AI
-Polish
-Sprint 5 — Hardening
-Performance
-Optimization
-Bug fixes
+V1 Status: COMPLETE (closed July 2026)
+All sprints are done. The open roadmap no longer applies. Do not treat sprint or feature language below as a to-do list — it is build history. The only scheduled work is the April annual update (see docs/ANNUAL_UPDATE.md). Any future session should read DECISIONS.md and PROJECT_STATUS.md before proposing changes.
 ---
 Page Philosophies
 Page	Philosophy
@@ -145,7 +122,7 @@ Players	The database explorer. All stats derive from the `players` sheet.
 Legacy Center	The museum. Prestigious. Celebrates careers, tells stories.
 Draft War Room	Strategy and competition. Wins, misses, trends.
 Wildcard Boys	Entertainment first. Cooked Meter. Crazy picks.
-Man Status	The rivalry. The most visited page when complete.
+Man Status	The rivalry.
 ---
 Component Rules
 If the same UI appears twice, it becomes a reusable component in `core/components.py`.

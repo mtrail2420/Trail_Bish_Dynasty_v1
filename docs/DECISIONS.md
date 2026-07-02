@@ -12,6 +12,112 @@ Future engineers should consult this before changing any listed behavior.
 
 ---
 
+## D036 — Full award + notes audit — 9 attribution fixes, 11 note cleanups (2026-07-01)
+
+**Date:** 2026-07-01
+**Status:** Complete — fix_audit.py provided; user runs on Windows
+
+A real-world award audit identified 9 attribution errors in the `players` sheet
+(wrong SB Win counts, one ALL_PRO overcounted, two ALL_PRO undercounted). An
+additional 11 player notes contained an obsolete "Franchise designation removed"
+sentence that was rendered meaningless after tiers became programmatically derived.
+
+**Award fixes:**
+
+| Player | Column | Before | After | Score Before | Score After |
+|---|---|---|---|---|---|
+| Jameis Winston | SB Win | 1 | 0 | 61.5 | 60.0 |
+| Chase Winovich | SB Win | 1 | 0 | 29.5 | 28.0 |
+| Jawaan Taylor | SB Win | 2 | 1 | 71 | 69.5 |
+| Myles Garrett | ALL_PRO | 5 | 6 | 97.6 | 97.6 (over cap) |
+| Cam Newton | ALL_PRO | 0 | 1 | 91 | 92.5 |
+| Roquan Smith | ALL_PRO | 3 | 2 | 82.5 | 81.0 |
+| DeVonta Smith | SB Win | 0 | 1 | 66 | 67.5 |
+| Mekhi Becton | SB Win | 0 | 1 | 58 | 59.5 |
+| Leonard Williams | SB Win | 0 | 1 | 74 | 75.5 |
+
+**Tier boundary check:** All 9 moves verified — no player crosses a tier boundary.
+DeVonta Smith intentionally sits at 67.5, 0.5 below the High-End Starter line (68.0).
+
+**Notes cleanup:** Removed sentence "Franchise designation removed during Legacy Audit;
+career projection not counted as earned franchise status." from 11 player notes
+(Kenneth Walker III, Tyler Linderbaum, Jalen Carter, Brian Branch, Jared Verse,
+Jayden Daniels, Brock Bowers, Joe Alt, Abdul Carter, Ashton Jeanty, Mason Graham).
+Sentence was obsolete — CAREER_TIER is now programmatically derived in data_loader
+via score_to_tier() and the workbook column is never trusted.
+
+**Kenneth Walker III note updated:** SB LX champion and Super Bowl LX MVP added.
+
+**JSN, Ernest Jones IV, Charles Cross notes checked:** "Super Bowl LX champion"
+added if missing from notes (all three were on the 2024 Seahawks SB LX roster).
+
+**Score delta rule applied:** delta = 0.6 × change in capped award points.
+Myles Garrett scored 97.6 both before and after because he was already above the
+16-point award cap.
+
+**Workbook note:** Both xlsx files (AP_Dynasty_Backend.xlsx, Trail_Bish_Dynasty_Premium.xlsx)
+have a ZIP central-directory truncation visible only from the Linux sandbox — on Windows
+and Streamlit Cloud they are fully readable. The fix is applied via `fix_audit.py`
+(run once, locally, from the project root). Do NOT write these files from the Linux
+sandbox — the NTFS write path for large files truncates the central directory.
+
+---
+
+## D035 — Friendly error handling + Data Status indicator (2026-07-01)
+
+**Date:** 2026-07-01
+**Status:** Complete
+
+Hardening pass: the app previously showed raw Python tracebacks whenever the
+backend workbook had a broken sheet name or missing column. Now it fails cleanly
+with plain-English messages that say exactly what to fix.
+
+**Architecture:**
+
+The three loaders (`load_players`, `load_man_status`, `load_wildcard`) were
+split into two layers:
+
+- **Internal cached implementations** (`_load_players_raw`, `_load_man_status_raw`,
+  `_load_wildcard_raw`): do the actual work, raise plain exceptions on failure,
+  never call `st.stop()`. Used by `get_data_status()` so it can probe without
+  stopping the page.
+
+- **Public wrappers** (same names as before — no page imports changed): catch any
+  exception, format it through `_fmt_load_error()`, call `st.error()` then
+  `st.stop()`. Pages call these. All existing page imports still work unchanged.
+
+**`_fmt_load_error(sheet, exc)`** produces three distinct messages:
+- Workbook file missing → tells you the expected path
+- Sheet name wrong → names the exact tab the app expects (case-sensitive)
+- Required column missing → lists the column and says to check the header row
+- Generic fallback for anything else
+
+**Required columns validated on load:**
+- `players`: PLAYER, POSITION, OWNER, YEAR, OVERALL SCORE
+- `man status`: YEAR, MATT_PICK, RYAN_PICK, WINNER
+
+**`get_data_status()`** probes all three sheets without `st.stop()` and
+returns `{players: int|None, sheets_ok: int, errors: [str]}`.
+
+**Data Status indicator:** added to the bottom of the sidebar (below the rivalry
+scoreboard) in `core/sidebar.py`. Shows:
+- `Data: ✓ 354 players · 3 sheets` on clean load (muted gray, unobtrusive)
+- `Data: ⚠️ 'players': ...` on failure (red)
+
+**Sidebar `StopException` guard:** the sidebar's rivalry-scoreboard try/except
+was updated to re-raise `StopException` by name check. This prevents the broad
+`except Exception` block from accidentally swallowing `st.stop()` signals
+emitted by the new public wrappers.
+
+**Caching note:** `@st.cache_resource` / `@st.cache_data` are process-level.
+Streamlit Cloud redeploys restart the process, so pushed workbook changes are
+always picked up fresh. No TTL needed for the current deploy workflow.
+
+**Files changed:** `core/data_loader.py`, `core/sidebar.py`, `assets/theme.css`.
+No page files changed.
+
+---
+
 ## D034 — Cleanup pass: Legacy Facts layout, Analytics live strings, margin precision (2026-06-30)
 
 **Date:** 2026-06-30

@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import io
 import shutil
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -634,6 +635,22 @@ def main() -> None:
 
     size_kb = OUTPUT.stat().st_size / 1024
     print(f"Done — {size_kb:.1f} KB")
+
+    # Row-count assertion: Premium must have the same player count as the backend
+    premium_wb  = openpyxl.load_workbook(str(OUTPUT))
+    premium_ws  = premium_wb["PLAYERS"]
+    # Rows: 1=title, 2=subtitle, 3=header, 4+ = data
+    premium_rows = sum(
+        1 for rn in range(4, premium_ws.max_row + 1)
+        if premium_ws.cell(rn, 2).value  # PLAYER column
+    )
+    if premium_rows != len(players):
+        print(
+            f"\nERROR: row count mismatch — "
+            f"backend has {len(players)} players, Premium has {premium_rows} rows."
+        )
+        sys.exit(1)
+    print(f"Verified    : {premium_rows} player rows match backend.")
     print()
     print("Next steps:")
     print("  git add Trail_Bish_Dynasty_Premium.xlsx")

@@ -16,7 +16,9 @@ streamlit_err.txt
 *_backup_*.xlsx
 test_*.xlsx
 test80k.xlsx
-draft_entry_*.txt
+
+# verify_scores.py snapshot — committed on first run, then updated in-place
+# (do NOT ignore — it's the drift reference; must live in the repo)
 
 # Environment
 .env

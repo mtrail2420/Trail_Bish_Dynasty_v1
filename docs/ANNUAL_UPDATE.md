@@ -49,10 +49,8 @@ The class drafted last April has now played one season:
 - [ ] Notes are facts only. No audit commentary, no "designation removed," no tier talk — tiers are derived, notes don't discuss them.
 
 ### Step 5 — Run the audit (same one from July 2026)
+- [ ] Run `python verify_scores.py` from the project root. It checks: implied baseline drift (any award or score edited without the matching delta), note/SB Win consistency, score bounds, and pending count. Fix every FAIL item before continuing.
 - [ ] Every player with any award: spot-verify counts against real history (search, don't recall).
-- [ ] Cross-check notes vs award columns: any note claiming "champion" with SB Win = 0, or vice versa, is a bug.
-- [ ] Confirm no tier/score inconsistencies (tiers derive, so this should be impossible — verify anyway).
-- [ ] Confirm pending counts: new class = all TBD, everyone else scored.
 - [ ] Confirm owner averages and Franchise/Legend counts recompute correctly.
 
 ### Step 6 — Enter the NEW class picks (pre-draft)
@@ -65,7 +63,7 @@ The class drafted last April has now played one season:
 
 ### Step 7 — Ship it
 - [ ] Regenerate the Premium workbook from the updated backend: `python make_premium.py`
-- [ ] Restart/redeploy so the live app picks up the workbook (verify the Data Status indicator shows the new player count).
+- [ ] Push workbook changes. The app cache-busts automatically on the next page load (mtime-keyed), so a fresh visit after redeploy should serve current data. Verify a specific changed value on the live site (e.g. a corrected score, the new player count). If data looks stale, reboot manually from the Manage app menu on Streamlit Cloud — that is the break-glass fallback, not the normal path.
 - [ ] Render check: Dashboard counts, Rankings, the new class visible as pending, WC scoreboard correct.
 - [ ] Log ONE entry in DECISIONS.md: "April {YEAR} annual update — awards verified, {YEAR-1} class scored, {YEAR} class entered, audit clean."
 

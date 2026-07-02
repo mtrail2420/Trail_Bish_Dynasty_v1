@@ -11,6 +11,7 @@ Responsibilities
 • Hide Streamlit chrome (header, footer, main menu, auto-nav).
 • Render branding, navigation, and live rivalry scoreboard.
 • Highlight the current page in the nav (via the ``active`` parameter).
+• Show a Data Status indicator so a broken workbook is caught at a glance.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from core.data_loader import load_players, workbook_exists
+from core.data_loader import load_players, get_data_status, workbook_exists, bust_stale_cache
 
 
 _CSS_PATH = Path("assets/theme.css")
@@ -60,6 +61,9 @@ def render_sidebar(active: str = "") -> None:
         Matched against ``_NAV`` labels to highlight the active item.
         Pass empty string (default) when no highlight is needed.
     """
+    # ── Cache-busting — must run before any data load on this render ─────────
+    bust_stale_cache()
+
     # ── CSS + chrome-hiding ───────────────────────────────────────────────────
     if _CSS_PATH.exists():
         st.markdown(
@@ -98,32 +102,51 @@ def render_sidebar(active: str = "") -> None:
         st.markdown('<div class="tb-sidebar-spacer"></div>', unsafe_allow_html=True)
 
         # Live rivalry scoreboard
-        if not workbook_exists():
-            return
+        if workbook_exists():
+            try:
+                df         = load_players()
+                matt_avg   = df[df["OWNER"] == "Matt"]["OVERALL SCORE"].mean()
+                ryan_avg   = df[df["OWNER"] == "Ryan"]["OVERALL SCORE"].mean()
+                leader     = "Matt" if matt_avg >= ryan_avg else "Ryan"
+                leader_cls = "tb-matt" if leader == "Matt" else "tb-ryan"
 
-        try:
-            df         = load_players()
-            matt_avg   = df[df["OWNER"] == "Matt"]["OVERALL SCORE"].mean()
-            ryan_avg   = df[df["OWNER"] == "Ryan"]["OVERALL SCORE"].mean()
-            leader     = "Matt" if matt_avg >= ryan_avg else "Ryan"
-            leader_cls = "tb-matt" if leader == "Matt" else "tb-ryan"
+                st.markdown(
+                    f"""
+                    <div class="tb-rivalry-box">
+                        <div class="tb-rivalry-title">⚔️ Rivalry</div>
+                        <div class="tb-score-row">
+                            <span class="tb-matt">Matt</span>
+                            <span class="tb-matt">{matt_avg:.1f} avg</span>
+                        </div>
+                        <div class="tb-score-row">
+                            <span class="tb-ryan">Ryan</span>
+                            <span class="tb-ryan">{ryan_avg:.1f} avg</span>
+                        </div>
+                        <div class="tb-sidebar-leader {leader_cls}">{leader} leads</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            except Exception as exc:
+                # Re-raise st.stop() signals — never swallow them.
+                # Silence everything else so sidebar rendering is always resilient.
+                if type(exc).__name__ == "StopException":
+                    raise
+                pass
 
+        # ── Data Status indicator ─────────────────────────────────────────────
+        # Probe all sheets and show a one-line health check at the bottom of
+        # the sidebar.  Green on clean load; red if anything failed.
+        ds = get_data_status()
+        if not ds["errors"]:
             st.markdown(
-                f"""
-                <div class="tb-rivalry-box">
-                    <div class="tb-rivalry-title">⚔️ Rivalry</div>
-                    <div class="tb-score-row">
-                        <span class="tb-matt">Matt</span>
-                        <span class="tb-matt">{matt_avg:.1f} avg</span>
-                    </div>
-                    <div class="tb-score-row">
-                        <span class="tb-ryan">Ryan</span>
-                        <span class="tb-ryan">{ryan_avg:.1f} avg</span>
-                    </div>
-                    <div class="tb-sidebar-leader {leader_cls}">{leader} leads</div>
-                </div>
-                """,
+                f'<div class="tb-data-status tb-ds-ok">'
+                f'Data: ✓ {ds["players"]} players · {ds["sheets_ok"]} sheets</div>',
                 unsafe_allow_html=True,
             )
-        except Exception:
-            pass
+        else:
+            first_err = ds["errors"][0]
+            st.markdown(
+                f'<div class="tb-data-status tb-ds-err">Data: ⚠️ {first_err}</div>',
+                unsafe_allow_html=True,
+            )

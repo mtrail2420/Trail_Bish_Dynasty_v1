@@ -427,6 +427,17 @@ section[data-testid="stSidebar"] button{
     height:20px;
 }
 
+.tb-data-status{
+    font-size:10px;
+    text-align:center;
+    padding:8px 4px 4px;
+    margin-top:4px;
+    border-top:1px solid var(--border);
+    letter-spacing:.03em;
+}
+.tb-ds-ok { color:var(--text-muted); }
+.tb-ds-err{ color:#E63B3B; }
+
 .tb-sidebar-leader{
     font-size:12px;
     font-weight:700;
