@@ -34,18 +34,18 @@ footer                          { visibility: hidden; }
 </style>
 """
 
-# Navigation registry — add new pages here as they are built.
+# Navigation registry — reorder here to change sidebar order.
 # Format: (icon, display_label, page_path)
 _NAV: list[tuple[str, str, str]] = [
-    ("🏠",  "Dashboard",   "pages/Dashboard.py"),
-    ("🗂️", "Players",     "pages/Players.py"),
-    ("📊", "Rankings",    "pages/Rankings.py"),
-    ("⚔️", "War Room",   "pages/WarRoom.py"),
-    ("🏛️", "Legacy",     "pages/Legacy.py"),
-    ("🥊", "Man Status", "pages/ManStatus.py"),
-    ("📈", "Analytics",  "pages/Analytics.py"),
-    ("📐", "Formula",    "pages/Formula.py"),
-    ("🔥", "Wildcard Boys", "pages/WildcardBoys.py"),
+    ("🏠",  "Dashboard",     "pages/Dashboard.py"),
+    ("🥊",  "Man Status",    "pages/ManStatus.py"),
+    ("🗂️", "Players",       "pages/Players.py"),
+    ("🔥",  "Wildcard Boys", "pages/WildcardBoys.py"),
+    ("📊",  "Rankings",      "pages/Rankings.py"),
+    ("⚔️", "War Room",      "pages/WarRoom.py"),
+    ("🏛️", "Legacy",        "pages/Legacy.py"),
+    ("📈",  "Analytics",     "pages/Analytics.py"),
+    ("📐",  "Formula",       "pages/Formula.py"),
 ]
 
 
@@ -124,6 +124,6 @@ def render_sidebar(active: str = "") -> None:
                 </div>
                 """,
                 unsafe_allow_html=True,
-             )
+            )
         except Exception:
             pass
