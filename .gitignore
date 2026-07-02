@@ -11,6 +11,13 @@ streamlit_log.txt
 streamlit_out.txt
 streamlit_err.txt
 
+# Workbook backups and debug scratch (never commit)
+*_bak_*.xlsx
+*_backup_*.xlsx
+test_*.xlsx
+test80k.xlsx
+draft_entry_*.txt
+
 # Environment
 .env
 .venv
