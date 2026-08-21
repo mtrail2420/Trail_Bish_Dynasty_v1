@@ -49,6 +49,20 @@ live data, update `class_grade()` accordingly. Product decision, not just engine
 
 ---
 
+### KI-016 — 16 players missing ring language in NOTES despite SB Win ≥ 1
+
+**Severity:** Low (cosmetic only — flagged as a WARNING, not a FAIL, by `verify_scores.py`)
+**Affects:** Player note text only. No score, tier, or ranking impact.
+**Found:** 2026-08-20, during the ring-detector false-positive fix (see D-2026-08-20 rework, `docs/REWORK_2026-08-20.md`).
+
+After fixing `verify_scores.py`'s word-boundary matching (previously matched "ring" inside "during" and flagged mere Super Bowl *appearances* as win claims), the audit correctly stopped failing on 10 players who never won — but surfaced 16 real winners whose NOTES text doesn't actually mention their ring:
+
+Cameron Erving, Leonard Williams, Jalen Ramsey, Carson Wentz, Ogbonnia Okoronkwo, Cam Akers, Mekhi Becton, Zack Baun, Devonta Smith, Jordan Davis, Nakobe Dean, Felix Anudike-Uzomah, Nolan Smith, Jalen Carter, Kelee Ringo, Jeremiah Trotter Jr.
+
+**Fix (deferred to next annual update):** Add explicit ring language (e.g. "Super Bowl champion") to each of the 16 players' NOTES cell in `AP_Dynasty_Backend.xlsx`, then regenerate `Trail_Bish_Dynasty_Premium.xlsx` via `make_premium.py`. Re-run `verify_scores.py` to confirm the warning count drops from 16 to 0.
+
+---
+
 ### KI-007 — DT position group has only 4 players per owner (n < MIN_RANKED_SAMPLE)
 
 **Severity:** Low

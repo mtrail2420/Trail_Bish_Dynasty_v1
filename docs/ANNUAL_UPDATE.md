@@ -47,6 +47,7 @@ The class drafted last April has now played one season:
 ### Step 4 — Notes refresh
 - [ ] Any player whose career materially changed (ring, major award, retirement, career-altering event): update the note to reflect it. The reigning SB MVP's note should say so.
 - [ ] Notes are facts only. No audit commentary, no "designation removed," no tier talk — tiers are derived, notes don't discuss them.
+- [ ] **KI-016 cleanup:** 16 players have SB Win ≥ 1 but no ring language in NOTES (flagged as WARNING by verify_scores.py, not FAIL — see docs/KNOWN_ISSUES.md). Add explicit ring mention to each: Cameron Erving, Leonard Williams, Jalen Ramsey, Carson Wentz, Ogbonnia Okoronkwo, Cam Akers, Mekhi Becton, Zack Baun, Devonta Smith, Jordan Davis, Nakobe Dean, Felix Anudike-Uzomah, Nolan Smith, Jalen Carter, Kelee Ringo, Jeremiah Trotter Jr.
 
 ### Step 5 — Run the audit (same one from July 2026)
 - [ ] Run `python verify_scores.py` from the project root. It checks: implied baseline drift (any award or score edited without the matching delta), note/SB Win consistency, score bounds, and pending count. Fix every FAIL item before continuing.
