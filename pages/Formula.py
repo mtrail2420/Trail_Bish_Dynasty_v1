@@ -11,7 +11,7 @@ import streamlit as st
 from core.components import page_header
 from core.data_loader import load_players, workbook_exists
 from core.sidebar import render_sidebar
-from core.stats import TIER_CUTOFFS, score_to_tier
+from core.stats import TIER_CUTOFFS, score_to_tier, compute_baseline_audit
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -97,6 +97,28 @@ color:#4a6080;margin-bottom:4px;}
 .fr-ex-result-val{font-size:36px;font-weight:900;color:#fff;line-height:1;}
 .fr-ex-result-tier{font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;}
 .fr-section-rule{border:none;border-top:1px solid rgba(255,255,255,.07);margin:32px 0 28px;}
+
+.fr-audit-box{background:rgba(10,14,25,.8);border:1px solid rgba(255,255,255,.08);
+border-radius:10px;padding:22px 26px;margin-bottom:18px;}
+.fr-audit-stat-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+.fr-audit-stat{flex:1;min-width:140px;background:rgba(0,0,0,.25);border-radius:8px;
+padding:12px 16px;text-align:center;}
+.fr-audit-stat-val{font-size:24px;font-weight:900;color:#D4AF37;line-height:1;}
+.fr-audit-stat-lbl{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+color:#4a6080;margin-top:6px;}
+.fr-audit-step-row{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.2);
+border-radius:7px;padding:8px 14px;margin-bottom:5px;font-size:13px;}
+.fr-audit-step-tiers{flex:1;color:#8090aa;font-weight:700;}
+.fr-audit-step-gap{color:#D4AF37;font-weight:900;font-family:'Courier New',monospace;}
+.fr-audit-note{font-size:13px;color:#4a6080;line-height:1.75;margin:14px 0;}
+.fr-audit-note strong{color:#7090aa;}
+.fr-audit-outlier-row{display:flex;align-items:center;gap:10px;padding:7px 12px;
+border-radius:6px;margin-bottom:4px;font-size:12px;background:rgba(0,0,0,.18);}
+.fr-audit-outlier-name{flex:1;color:#c0cce0;font-weight:700;}
+.fr-audit-outlier-tiers{color:#4a6080;width:150px;}
+.fr-audit-outlier-delta{font-weight:900;font-family:'Courier New',monospace;width:60px;text-align:right;}
+.fr-audit-outlier-delta.neg{color:#E63B3B;}
+.fr-audit-outlier-delta.pos{color:#22c55e;}
 </style>""", unsafe_allow_html=True)
 
 # ── Page Header ───────────────────────────────────────────────────────────────
@@ -327,3 +349,101 @@ if workbook_exists():
             f'<div style="color:#4a6080;font-size:12px;padding:12px;">Example unavailable: {_e}</div>',
             unsafe_allow_html=True,
             )
+
+# ── Baseline Methodology Audit ───────────────────────────────────────────────
+# Documentation only — reverse-derives each player's baseline from the locked
+# formula to show HOW it correlates with PRODUCTION/LONGEVITY, using the
+# actual current workbook every time this renders. Nothing here changes any
+# score, tier, or the formula itself (locked, D030 — see docs/DECISIONS.md).
+st.markdown('<hr class="fr-section-rule">', unsafe_allow_html=True)
+st.markdown('<div class="fr-lbl">Baseline methodology audit</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="fr-plain">'
+    'The baseline half of every score (before awards) isn\'t arbitrary — here\'s exactly '
+    'how it lines up with the PRODUCTION and LONGEVITY fields, recomputed live from the '
+    'current roster every time this page loads.'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+try:
+    _audit = compute_baseline_audit(df)
+
+    st.markdown(
+        f'<div class="fr-audit-box">'
+        f'<div class="fr-audit-stat-row">'
+        f'<div class="fr-audit-stat"><div class="fr-audit-stat-val">{_audit["production_r2"]*100:.1f}%</div>'
+        f'<div class="fr-audit-stat-lbl">Variance explained<br>by PRODUCTION alone</div></div>'
+        f'<div class="fr-audit-stat"><div class="fr-audit-stat-val">{_audit["production_longevity_r2"]*100:.1f}%</div>'
+        f'<div class="fr-audit-stat-lbl">+ LONGEVITY<br>(marginal gain, small)</div></div>'
+        f'<div class="fr-audit-stat"><div class="fr-audit-stat-val">{_audit["avg_step"]:g}</div>'
+        f'<div class="fr-audit-stat-lbl">Avg points per<br>PRODUCTION tier step</div></div>'
+        f'<div class="fr-audit-stat"><div class="fr-audit-stat-val">{_audit["residual_std"]:g}</div>'
+        f'<div class="fr-audit-stat-lbl">Std dev of judgment<br>beyond the tiers</div></div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="fr-audit-note"><strong>Step sizes between PRODUCTION tiers</strong> — not perfectly uniform: tight in the middle, wider at both ends.</div>', unsafe_allow_html=True)
+    for s in _audit["steps"]:
+        st.markdown(
+            f'<div class="fr-audit-step-row">'
+            f'<span class="fr-audit-step-tiers">{s["from"]} → {s["to"]}</span>'
+            f'<span class="fr-audit-step-gap">{s["gap"]:g} pts</span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(
+        f'<div class="fr-audit-note">'
+        f'LONGEVITY only adds <strong>{(_audit["production_longevity_r2"]-_audit["production_r2"])*100:.1f} percentage points</strong> '
+        f'on top of PRODUCTION — real but minor. CHAMPIONSHIP_IMPACT is tagged on only '
+        f'<strong>{_audit["n_champ_impact_tagged"]} of {_audit["n_scored"]}</strong> scored players, so it\'s a rare '
+        f'special-case flag, not a general input most players have.'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="fr-audit-note"><strong>The ~12% not explained by tiers alone is deliberate judgment, '
+        'not noise.</strong> Players scored notably below their tier were mostly real busts relative to '
+        'their draft hype; players scored above were mostly legitimate emerging talent. A few examples:</div>',
+        unsafe_allow_html=True,
+    )
+
+    _oc1, _oc2 = st.columns(2)
+    with _oc1:
+        st.markdown('<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#E63B3B;margin-bottom:8px;">Scored below tier</div>', unsafe_allow_html=True)
+        for o in _audit["penalized_below_tier"][:5]:
+            st.markdown(
+                f'<div class="fr-audit-outlier-row">'
+                f'<span class="fr-audit-outlier-name">{o["name"]} ({o["owner"]})</span>'
+                f'<span class="fr-audit-outlier-tiers">{o["production"]}/{o["longevity"]}</span>'
+                f'<span class="fr-audit-outlier-delta neg">{o["residual"]:+.1f}</span>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+    with _oc2:
+        st.markdown('<div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#22c55e;margin-bottom:8px;">Scored above tier</div>', unsafe_allow_html=True)
+        for o in _audit["credited_above_tier"][:5]:
+            st.markdown(
+                f'<div class="fr-audit-outlier-row">'
+                f'<span class="fr-audit-outlier-name">{o["name"]} ({o["owner"]})</span>'
+                f'<span class="fr-audit-outlier-tiers">{o["production"]}/{o["longevity"]}</span>'
+                f'<span class="fr-audit-outlier-delta pos">{o["residual"]:+.1f}</span>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    st.markdown(
+        '<div class="fr-audit-note" style="margin-top:16px;">'
+        'This is documentation of how the existing baseline was derived — it does not change any '
+        'score, tier, or the formula above, which is locked (D030).'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+except Exception as _audit_e:
+    st.markdown(
+        f'<div style="color:#4a6080;font-size:12px;padding:12px;">Audit unavailable: {_audit_e}</div>',
+        unsafe_allow_html=True,
+    )

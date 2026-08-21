@@ -750,3 +750,109 @@ def compute_smack_talk_facts(df: pd.DataFrame, class_df: pd.DataFrame) -> dict:
 
     facts["class_wins"] = {"Matt": record["matt_wins"], "Ryan": record["ryan_wins"], "ties": record["ties"]}
     return facts
+
+
+# ---------------------------------------------------------------------------
+# Baseline methodology audit — how OVERALL SCORE's baseline was actually
+# derived (documentation, not a scoring change). See docs/DECISIONS.md D030
+# for why the formula itself is locked and never touched by this analysis.
+# ---------------------------------------------------------------------------
+
+_AWARD_WEIGHTS: dict[str, float] = {
+    "MVP": 6, "SB_MVP": 4, "OPOY": 3, "DPOY": 3,
+    "ALL_PRO": 2.5, "SB Win": 2.5, "OROY": 1, "DROY": 1,
+}
+_TIER_ORDINAL: dict[str, int] = {"Elite": 4, "High": 3, "Moderate": 2, "Low": 1, "Minimal": 0}
+
+
+def _implied_baseline(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Reverse the locked D030 formula to recover each scored player's baseline:
+    baseline = OVERALL SCORE - 0.6 * min(award_points, 16).
+    Read-only derivation for documentation purposes — never written back to
+    the workbook, never used to recompute OVERALL SCORE or CAREER_TIER.
+    """
+    scored = df.dropna(subset=["OVERALL SCORE"]).copy()
+    for c in _AWARD_WEIGHTS:
+        if c in scored.columns:
+            scored[c] = scored[c].fillna(0).astype(float)
+        else:
+            scored[c] = 0.0
+    scored["award_pts_raw"] = sum(scored[c] * w for c, w in _AWARD_WEIGHTS.items())
+    scored["award_pts_capped"] = scored["award_pts_raw"].clip(upper=16)
+    scored["implied_baseline"] = scored["OVERALL SCORE"] - 0.6 * scored["award_pts_capped"]
+    return scored
+
+
+def _r2_linreg(X_cols: list, y: "pd.Series") -> tuple[float, list[float]]:
+    """Plain numpy least-squares linear regression — avoids adding sklearn
+    as a dependency for one R² computation on a free-tier Streamlit app."""
+    import numpy as np
+    X = np.column_stack([X_cols[i] for i in range(len(X_cols))] + [np.ones(len(y))])
+    coef, *_ = np.linalg.lstsq(X, y.values, rcond=None)
+    pred = X @ coef
+    ss_res = float(((y.values - pred) ** 2).sum())
+    ss_tot = float(((y.values - y.values.mean()) ** 2).sum())
+    r2 = 1 - ss_res / ss_tot if ss_tot else 0.0
+    return r2, list(coef), pred
+
+
+def compute_baseline_audit(df: pd.DataFrame) -> dict:
+    """
+    Live audit of how the baseline component of OVERALL SCORE relates to
+    the PRODUCTION / LONGEVITY / CHAMPIONSHIP_IMPACT tier fields.
+
+    Documentation only — recomputes nothing that feeds back into the app's
+    actual scores. Every number here is derived fresh from the current
+    workbook each time this runs, so it can't go stale relative to the data.
+    """
+    scored = _implied_baseline(df)
+    scored["prod_ord"] = scored["PRODUCTION"].map(_TIER_ORDINAL)
+    scored["long_ord"] = scored["LONGEVITY"].map(_TIER_ORDINAL)
+
+    # Step sizes: mean implied baseline per PRODUCTION tier, in tier order
+    tier_order = ["Elite", "High", "Moderate", "Low", "Minimal"]
+    prod_means = scored.groupby("PRODUCTION")["implied_baseline"].mean()
+    steps = []
+    for i in range(len(tier_order) - 1):
+        hi, lo = tier_order[i], tier_order[i + 1]
+        if hi in prod_means.index and lo in prod_means.index:
+            steps.append({
+                "from": hi, "to": lo,
+                "gap": round(float(prod_means[hi] - prod_means[lo]), 1),
+            })
+
+    sub = scored.dropna(subset=["prod_ord", "long_ord", "implied_baseline"])
+    r2_prod, _, _ = _r2_linreg([sub["prod_ord"].values], sub["implied_baseline"])
+    r2_both, coef_both, pred_both = _r2_linreg(
+        [sub["prod_ord"].values, sub["long_ord"].values], sub["implied_baseline"]
+    )
+
+    sub = sub.copy()
+    sub["predicted"] = pred_both
+    sub["residual"] = sub["implied_baseline"] - sub["predicted"]
+
+    def _outlier_rows(rows) -> list[dict]:
+        return [
+            {
+                "name": str(r["PLAYER"]), "owner": str(r["OWNER"]),
+                "production": str(r["PRODUCTION"]), "longevity": str(r["LONGEVITY"]),
+                "baseline": round(float(r["implied_baseline"]), 1),
+                "predicted": round(float(r["predicted"]), 1),
+                "residual": round(float(r["residual"]), 1),
+            }
+            for _, r in rows.iterrows()
+        ]
+
+    return {
+        "n_scored": int(len(scored)),
+        "n_with_awards": int((scored["award_pts_raw"] > 0).sum()),
+        "n_champ_impact_tagged": int(scored["CHAMPIONSHIP_IMPACT"].notna().sum()),
+        "production_r2": round(r2_prod, 4),
+        "production_longevity_r2": round(r2_both, 4),
+        "avg_step": round(sum(s["gap"] for s in steps) / len(steps), 1) if steps else 0.0,
+        "steps": steps,
+        "residual_std": round(float(sub["residual"].std()), 2),
+        "penalized_below_tier": _outlier_rows(sub.nsmallest(6, "residual")),
+        "credited_above_tier": _outlier_rows(sub.nlargest(6, "residual")),
+    }
