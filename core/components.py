@@ -23,7 +23,7 @@ import html as _html
 import math as _math
 
 from core.stats import FRANCHISE_TIERS
-from core.utils import is_score_pending, safe_int, fmt_score
+from core.utils import is_score_pending, safe_int, fmt_score, format_round
 
 
 # ---------------------------------------------------------------------------
@@ -365,7 +365,7 @@ def player_detail_card(
     owner_cls  = "tb-detail-matt" if owner == "Matt" else "tb-detail-ryan"
     safe_name  = _html.escape(str(name))
     safe_notes = _html.escape(str(notes)) if notes and str(notes) != "nan" else ""
-    rd_str     = f"Round {round_}" if round_ else "—"
+    rd_str     = format_round(round_, spelled_out=True)
     pending    = is_score_pending(score)
     score_disp = score_pending_badge() if pending else _fmt_score(score)
     score_cls  = "" if pending else ("tb-matt" if owner == "Matt" else "tb-ryan")
@@ -445,7 +445,7 @@ def class_dive_row(
     Reuses ``.tb-class-dive-row`` grid defined in theme.css.
     """
     safe   = _html.escape(str(name))
-    rd_str = f"Rd {round_}" if round_ else "—"
+    rd_str = format_round(round_)
 
     if is_score_pending(score):
         score_disp = score_pending_badge()
@@ -486,7 +486,7 @@ def player_roster_row(
     This variant adds round, award badges, and a score bar with a pending state.
     """
     safe   = _html.escape(str(name))
-    rd_str = f"Rd {round_}" if round_ else "—"
+    rd_str = format_round(round_)
 
     if is_score_pending(score):
         score_inner = score_pending_badge()
@@ -747,7 +747,7 @@ def legacy_spotlight_card(
     """Ceremonial featured-player card for the Legacy Spotlight section."""
     pending    = is_score_pending(score)
     score_disp = score_pending_badge() if pending else _fmt_score(score)
-    rd_str     = f"Round {safe_int(round_)}" if round_ else "—"
+    rd_str     = format_round(round_, spelled_out=True)
     facts_html = "".join(
         f'<div class="tb-spotlight-fact">★ {_html.escape(str(f))}</div>' for f in facts
     )

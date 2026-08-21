@@ -5,7 +5,7 @@ import streamlit as st
 from core.data_loader import load_man_status, load_players, workbook_exists
 from core.sidebar import render_sidebar
 from core.stats import compute_ms_summary, ms_winner_state
-from core.utils import safe_int, FIRST_YEAR, CURRENT_YEAR
+from core.utils import safe_int, FIRST_YEAR, CURRENT_YEAR, format_round
 from core.components import (
     owner_chip,
     position_chip,
@@ -317,8 +317,8 @@ _bb_rows = [
     ),
     rivalry_stat_row("Total Awards", str(m_awards), str(r_awards), _bb_winner_numeric(m_awards, r_awards)),
     rivalry_stat_row(
-        "Draft Capital", f"Rd {safe_int(_m_row['ROUND'])} · {int(_m_row['YEAR'])}",
-        f"Rd {safe_int(_r_row['ROUND'])} · {int(_r_row['YEAR'])}", "",
+        "Draft Capital", f"{format_round(_m_row['ROUND'])} · {int(_m_row['YEAR'])}",
+        f"{format_round(_r_row['ROUND'])} · {int(_r_row['YEAR'])}", "",
     ),
 ]
 

@@ -31,6 +31,33 @@ def safe_int(val, default: int = 0) -> int:
         return default
 
 
+UDFA_ROUND: int = 8
+"""Sentinel value stored in the ROUND column for undrafted free agents.
+
+The real NFL draft only has 7 rounds, so 8 can never collide with a real
+pick. It's deliberately >= 4 so UDFA players are eligible for "late-round
+steal" comparisons across the app (an undrafted player who becomes a
+stud is the ultimate value story) while `format_round()` below ensures
+it is never displayed as the literal, nonexistent "Round 8" — it always
+renders as "UDFA".
+"""
+
+
+def format_round(round_val, spelled_out: bool = False) -> str:
+    """Format a ROUND value for display: 'Rd 3' / 'Round 3', 'UDFA', or '—'.
+
+    Use *spelled_out* for surfaces that write out "Round" in full
+    (player_detail_card, legacy_spotlight_card); leave it False for the
+    abbreviated "Rd" form used in compact rows and comparison chips.
+    """
+    r = safe_int(round_val, default=0)
+    if r == UDFA_ROUND:
+        return "UDFA"
+    if r >= 1:
+        return f"Round {r}" if spelled_out else f"Rd {r}"
+    return "—"
+
+
 def safe_str(val) -> str:
     """Convert *val* to str, returning ``""`` for NaN / None / the literal strings."""
     s = str(val)

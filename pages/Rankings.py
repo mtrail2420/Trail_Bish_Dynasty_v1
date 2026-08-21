@@ -12,7 +12,7 @@ from core.stats import (
     MIN_RANKED_SAMPLE,
     compute_dynasty_awards,
 )
-from core.utils import safe_int, is_score_pending
+from core.utils import safe_int, is_score_pending, format_round
 from core.components import (
     page_header,
     section_header,
@@ -272,7 +272,7 @@ with _aw1:
         st.markdown(
             callout(
                 "BIGGEST STEAL", a["name"],
-                f"{a['owner']} · Rd {a['round']} · Score {a['value']:.1f}",
+                f"{a['owner']} · {format_round(a['round'])} · Score {a['value']:.1f}",
                 _award_color(a["owner"]),
             ),
             unsafe_allow_html=True,
@@ -284,7 +284,7 @@ with _aw2:
         st.markdown(
             callout(
                 "BIGGEST BUST", a["name"],
-                f"{a['owner']} · Rd {a['round']} · Score {a['value']:.1f}",
+                f"{a['owner']} · {format_round(a['round'])} · Score {a['value']:.1f}",
                 _award_color(a["owner"]),
             ),
             unsafe_allow_html=True,

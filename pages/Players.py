@@ -3,7 +3,7 @@ import streamlit as st
 from core.data_loader import load_players, workbook_exists
 from core.sidebar import render_sidebar
 from core.stats import compute_league_stats, compute_owner_stats, POSITION_GROUPS as _POS_GROUPS
-from core.utils import safe_int, safe_str, is_score_pending, fmt_score, YEAR_RANGE
+from core.utils import safe_int, safe_str, is_score_pending, fmt_score, YEAR_RANGE, format_round, UDFA_ROUND
 from core.components import (
     page_header,
     section_header,
@@ -154,7 +154,7 @@ with i2:
         callout(
             "BIGGEST LATE-ROUND STEAL",
             str(best_late["PLAYER"]),
-            f"{best_late['OWNER']} · Rd {safe_int(best_late['ROUND'])} · Score {fmt_score(best_late['OVERALL SCORE'])}",
+            f"{best_late['OWNER']} · {format_round(best_late['ROUND'])} · Score {fmt_score(best_late['OVERALL SCORE'])}",
             late_color,
         ),
         unsafe_allow_html=True,
@@ -309,7 +309,7 @@ def _render_cmp_side(row, is_winner: bool) -> str:
     tier_col  = _TIER_COLORS_CMP.get(tier, "#fff")
     pos       = str(row["POSITION"])
     year      = int(row["YEAR"])
-    rnd       = int(row["ROUND"]) if str(row["ROUND"]) != "nan" else "?"
+    rnd       = "UDFA" if safe_int(row["ROUND"]) == UDFA_ROUND else (int(row["ROUND"]) if str(row["ROUND"]) != "nan" else "?")
     aw_pts    = _cmp_award_total(row)
     score_cls = "winner" if is_winner else ""
     aw_cls    = "winner" if is_winner else ""
@@ -384,7 +384,10 @@ with f4:
     year_opts   = ["All"] + [str(y) for y in sorted(df["YEAR"].unique().astype(int), reverse=True)]
     year_filter = st.selectbox("Draft Class", year_opts, key="f_year")
 with f5:
-    round_opts   = ["All"] + [f"Rd {r}" for r in sorted(df["ROUND"].dropna().unique().astype(int))]
+    _real_rounds = sorted(r for r in df["ROUND"].dropna().unique().astype(int) if r != UDFA_ROUND)
+    round_opts   = ["All"] + [f"Rd {r}" for r in _real_rounds]
+    if (df["ROUND"] == UDFA_ROUND).any():
+        round_opts.append("UDFA")
     round_filter = st.selectbox("Round", round_opts, key="f_round")
 with f6:
     sort_label = st.selectbox("Sort by", list(SORT_MAP.keys()), key="f_sort")
@@ -409,7 +412,10 @@ if year_filter != "All":
     filtered = filtered[filtered["YEAR"] == int(year_filter)]
 
 if round_filter != "All":
-    filtered = filtered[filtered["ROUND"] == int(round_filter.replace("Rd ", ""))]
+    if round_filter == "UDFA":
+        filtered = filtered[filtered["ROUND"] == UDFA_ROUND]
+    else:
+        filtered = filtered[filtered["ROUND"] == int(round_filter.replace("Rd ", ""))]
 
 if search.strip():
     filtered = filtered[
@@ -524,7 +530,7 @@ with _fc_tab1:
         _fp_tier   = str(_fp["CAREER_TIER"])
         _fp_tc     = _TIER_COLORS_CMP.get(_fp_tier, "#fff")
         _fp_aw     = _cmp_award_chips(_fp)
-        _fp_rd     = int(_fp["ROUND"]) if str(_fp["ROUND"]) != "nan" else "?"
+        _fp_rd     = format_round(_fp["ROUND"])
         _fp_score_html = f'<div class="fc-score-big">{_fp_score:g}</div>' if _fp_score else '<div class="fc-score-big" style="color:#4a6080;">TBD</div>'
         st.markdown(
             f'<div class="fc-card">'
@@ -542,7 +548,7 @@ with _fc_tab1:
             f'    <div class="fc-tier-badge" style="background:rgba(0,0,0,.3);color:{_fp_tc};border:1px solid {_fp_tc}44;">{_fp_tier}</div>'
             f'    <div class="fc-stat-grid">'
             f'      <div class="fc-stat"><div class="fc-stat-val">{str(_fp["POSITION"])}</div><div class="fc-stat-lbl">Position</div></div>'
-            f'      <div class="fc-stat"><div class="fc-stat-val">Rd {_fp_rd}</div><div class="fc-stat-lbl">Draft Round</div></div>'
+            f'      <div class="fc-stat"><div class="fc-stat-val">{_fp_rd}</div><div class="fc-stat-lbl">Draft Round</div></div>'
             f'    </div>'
             f'    <div class="fc-score-label" style="margin-bottom:6px;">Awards</div>'
             f'    <div class="fc-awards-row">{_fp_aw}</div>'
@@ -589,7 +595,7 @@ with _fc_tab2:
              _sa2 > _sb2, _sb2 > _sa2),
             ("Position",  str(_fa["POSITION"]), str(_fb["POSITION"]), False, False),
             ("Draft Year", str(int(_fa["YEAR"])), str(int(_fb["YEAR"])), False, False),
-            ("Round",      f'Rd {_vs_val(_fa, "ROUND")}', f'Rd {_vs_val(_fb, "ROUND")}', False, False),
+            ("Round",      format_round(_fa["ROUND"]), format_round(_fb["ROUND"]), False, False),
             ("Award Pts",
              f'{_cmp_award_total(_fa):g}', f'{_cmp_award_total(_fb):g}',
              _cmp_award_total(_fa) > _cmp_award_total(_fb),

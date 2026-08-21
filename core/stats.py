@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from core.utils import is_score_pending
+from core.utils import is_score_pending, UDFA_ROUND
 
 
 # ---------------------------------------------------------------------------
@@ -598,7 +598,10 @@ def class_retrospective(year_df: pd.DataFrame) -> dict:
 
     headline = f"{best_pick['name']} ({best_pick['owner']}) was the class's best player at {best_pick['score']:.1f}."
     if steal and steal["name"] != best_pick["name"]:
-        headline += f" {steal['owner']}'s Round {steal['round']} pick of {steal['name']} was the steal of the class."
+        if steal["round"] == UDFA_ROUND:
+            headline += f" {steal['owner']}'s undrafted signing of {steal['name']} was the steal of the class."
+        else:
+            headline += f" {steal['owner']}'s Round {steal['round']} pick of {steal['name']} was the steal of the class."
     if biggest_miss:
         headline += f" {biggest_miss['owner']}'s Round {biggest_miss['round']} selection of {biggest_miss['name']} never lived up to the pick."
 

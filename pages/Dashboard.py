@@ -3,7 +3,7 @@ import streamlit as st
 from core.data_loader import load_players, workbook_exists
 from core.sidebar import render_sidebar
 from core.stats import compute_league_stats, compute_owner_stats, score_leader, compute_class_stats, POSITION_GROUPS
-from core.utils import fmt_score, CURRENT_YEAR
+from core.utils import fmt_score, CURRENT_YEAR, format_round
 from core.components import (
     page_header,
     section_header,
@@ -138,7 +138,7 @@ for col, (_, vrow) in zip([v1, v2, v3], value_picks.iterrows()):
     color = "blue" if vrow["OWNER"] == "Matt" else "red"
     col.markdown(
         callout(
-            label  = f"Rd {int(vrow['ROUND'])} · {vrow['OWNER']} · {int(vrow['YEAR'])}",
+            label  = f"{format_round(vrow['ROUND'])} · {vrow['OWNER']} · {int(vrow['YEAR'])}",
             value  = vrow["PLAYER"],
             detail = f"{vrow['POSITION']} · Score {fmt_score(vrow['OVERALL SCORE'])} · {vrow['CAREER_TIER']}",
             color  = color,
@@ -329,7 +329,7 @@ if len(_class26) > 0:
                 f'<div class="db-coming-pick-row">'
                 f'<span class="db-coming-pick-pos">{pr["POSITION"]}</span>'
                 f'<span class="db-coming-pick-name {_owner_cls}">{pr["PLAYER"]}</span>'
-                f'<span class="db-coming-pick-rd">Rd {int(pr["ROUND"]) if str(pr["ROUND"]) != "nan" else "?"}</span>'
+                f'<span class="db-coming-pick-rd">{format_round(pr["ROUND"])}</span>'
                 f'<span class="db-coming-tbd">TBD</span>'
                 f'</div>'
             )
