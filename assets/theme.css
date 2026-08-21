@@ -2469,3 +2469,50 @@ a.tb-exhibit-anchor:hover{text-decoration:none}
     .tb-ms-title{ font-size:26px; }
     .tb-ms-tally-num{ font-size:34px; }
 }
+
+@media (max-width: 768px){
+
+    /* --- Legacy Center hero: Matt banner | center trophy | Ryan banner was
+       a non-wrapping 3-column flex row with each side banner locked to a
+       148px minimum — guaranteed overflow on a phone. Stack vertically. --- */
+    .tb-lc-hero{
+        flex-direction:column;
+    }
+    .tb-lc-banner{
+        min-width:0;
+        flex-shrink:1;
+        width:100%;
+    }
+
+    /* --- Man Status scoreboard hero: Matt corner | tally | Ryan corner was
+       the same non-wrapping 3-column pattern as the Legacy hero above.
+       Stack vertically so the tally sits between the two corners instead
+       of squeezing all three into one row. --- */
+    .tb-ms-corners{
+        flex-direction:column;
+        gap:10px;
+    }
+    .tb-ms-corner{
+        max-width:none;
+        border-right:none !important;
+        border-left:none !important;
+    }
+    .tb-ms-tally{
+        padding:8px 0;
+    }
+
+    /* --- Tale of the Tape header (Build Your Own Battle): same 3-column
+       pattern, stack for consistency with the comparison rows below it,
+       which already stack via .tb-comparison-row. --- */
+    .tb-ms-tot-header{
+        flex-direction:column;
+        gap:10px;
+        text-align:center;
+    }
+    .tb-ms-tot-side-right{
+        text-align:center;
+    }
+    .tb-ms-tot-center{
+        padding:6px 0;
+    }
+}
