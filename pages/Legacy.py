@@ -454,7 +454,7 @@ for i, (_, p) in enumerate(busts.iterrows(), 1):
 shame_html += "</div>"
 st.markdown(shame_html, unsafe_allow_html=True)
 
-# ── 4F · Legacy Hall — all 48 Franchise players ───────────────────────────
+# ── 4F · Legacy Hall — Legend + Franchise tiers (score-derived) ───────────
 hof_html = (
     '<div id="legacy-hall" class="tb-lc-room">'
     '<div class="tb-lc-room-header">🏆 LEGACY HALL</div>'
