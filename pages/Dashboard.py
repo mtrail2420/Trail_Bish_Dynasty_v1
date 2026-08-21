@@ -2,7 +2,7 @@ import streamlit as st
 
 from core.data_loader import load_players, workbook_exists
 from core.sidebar import render_sidebar
-from core.stats import compute_league_stats, compute_owner_stats, score_leader, compute_class_stats, POSITION_GROUPS
+from core.stats import compute_league_stats, compute_owner_stats, score_leader, compute_class_stats, compute_power_history, POSITION_GROUPS
 from core.utils import fmt_score, CURRENT_YEAR, format_round
 from core.components import (
     page_header,
@@ -182,28 +182,39 @@ st.markdown(
 )
 
 _cs = compute_class_stats(df)
+# Consolidation (per Chip's audit): the year-by-year avg-score math below
+# used to be computed independently here via a second pass over _cs. It's
+# now sourced from compute_power_history(_cs) -- the same shared function
+# Dynasty Timeline already uses -- so there's exactly one place that
+# computes "per-class-year average score by owner", not two that happen
+# to currently agree. _cs is still used directly, but only to answer a
+# yes/no eligibility question (did this owner have a scored pick in this
+# specific year), not to re-derive the average itself.
+_power_hist = compute_power_history(_cs)
 
 def _build_momentum_card(owner: str, cls_name: str, limit: int | None = 5) -> str:
     """Build the momentum card HTML for one owner. limit=None shows full history."""
-    odf = _cs[(_cs["OWNER"] == owner) & (_cs["scored"] > 0)].sort_values("YEAR")
-    recent = odf.tail(limit) if limit else odf
+    avg_key = "matt_avg" if owner == "Matt" else "ryan_avg"
+    eligible_years = sorted(_cs[(_cs["OWNER"] == owner) & (_cs["scored"] > 0)]["YEAR"].tolist())
+    eligible_years = eligible_years[-limit:] if limit else eligible_years
+    recent = [h for h in _power_hist if h["year"] in eligible_years]
     if len(recent) == 0:
         return ""
-    max_avg = max(recent["avg_score"].max(), 1)
+    max_avg = max(max((h[avg_key] for h in recent), default=0), 1)
     rows_html = ""
-    for _, r in recent.iterrows():
-        bar_w = round(r["avg_score"] / max_avg * 100)
+    for h in recent:
+        bar_w = round(h[avg_key] / max_avg * 100)
         rows_html += (
             f'<div class="db-momentum-row">'
-            f'<span class="db-momentum-yr">{int(r["YEAR"])}</span>'
+            f'<span class="db-momentum-yr">{h["year"]}</span>'
             f'<div class="db-momentum-bar-wrap">'
             f'<div class="db-momentum-bar {cls_name}" style="width:{bar_w}%"></div>'
             f'</div>'
-            f'<span class="db-momentum-val">{r["avg_score"]:.1f}</span>'
+            f'<span class="db-momentum-val">{h[avg_key]:.1f}</span>'
             f'</div>'
         )
     # Trend: compare last vs previous
-    avgs = recent["avg_score"].tolist()
+    avgs = [h[avg_key] for h in recent]
     if len(avgs) >= 2:
         delta_val = avgs[-1] - avgs[-2]
         if delta_val > 1:

@@ -138,25 +138,56 @@ def compute_league_stats(df: pd.DataFrame) -> dict:
 # Per-owner stats
 # ---------------------------------------------------------------------------
 
+def _owner_aggregate(sub_df: pd.DataFrame) -> dict:
+    """
+    Core owner-level aggregate primitive over whatever roster slice is
+    passed in -- the whole dynasty, one owner's picks, one owner's picks
+    through a given year, etc. Shared foundation for compute_owner_stats()
+    (whole-dynasty-to-date slice) and compute_cumulative_power() (an
+    expanding year-by-year slice).
+
+    These two answer conceptually different questions -- "what are this
+    owner's aggregate stats" vs. "how has cumulative power changed over
+    time" -- and deliberately remain separate functions rather than one
+    depending on the other's output, per the consolidation decision in
+    project chat: they happen to agree at the latest data point today,
+    but that's a consequence of both being correct, not a reason to
+    couple two conceptually distinct questions together. What they
+    actually share is the underlying arithmetic, which lives here once.
+
+    Returns {total, scored_count, avg_score, franchise, busts, high_score}.
+    `total` counts every row passed in (scored or not); `scored_count` and
+    `avg_score`/`high_score` only consider rows with a real OVERALL SCORE.
+    """
+    scored = sub_df.dropna(subset=["OVERALL SCORE"])
+    return {
+        "total":        int(len(sub_df)),
+        "scored_count": int(len(scored)),
+        "avg_score":    float(scored["OVERALL SCORE"].mean()) if len(scored) else 0.0,
+        "franchise":    int(sub_df["CAREER_TIER"].isin(FRANCHISE_TIERS).sum()),
+        "busts":        int((sub_df["CAREER_TIER"] == "Bust").sum()),
+        "high_score":   int(scored["OVERALL SCORE"].max()) if len(scored) else 0,
+    }
+
+
 def compute_owner_stats(df: pd.DataFrame, owner: str) -> dict:
     """
-    Compute per-owner statistics.
+    Compute per-owner statistics (whole dynasty, to date).
 
     Parameters
     ----------
     df:    Raw players DataFrame from ``load_players()``.
     owner: ``"Matt"`` or ``"Ryan"``.
     """
-    odf    = df[df["OWNER"] == owner]
-    scored = odf.dropna(subset=["OVERALL SCORE"])
-
+    odf = df[df["OWNER"] == owner]
+    agg = _owner_aggregate(odf)
     return {
         "owner":      owner,
-        "total":      int(len(odf)),
-        "avg_score":  float(scored["OVERALL SCORE"].mean()) if len(scored) else 0.0,
-        "franchise":  int(odf["CAREER_TIER"].isin(FRANCHISE_TIERS).sum()),
-        "busts":      int((odf["CAREER_TIER"] == "Bust").sum()),
-        "high_score": int(scored["OVERALL SCORE"].max()) if len(scored) else 0,
+        "total":      agg["total"],
+        "avg_score":  agg["avg_score"],
+        "franchise":  agg["franchise"],
+        "busts":      agg["busts"],
+        "high_score": agg["high_score"],
     }
 
 
@@ -977,21 +1008,19 @@ def compute_cumulative_power(df: pd.DataFrame) -> list[dict]:
     matt_n, ryan_n}. Years before either owner has a single scored pick
     are omitted (there is no "standing" yet to report).
     """
-    scored = df.dropna(subset=["OVERALL SCORE"])
     rows: list[dict] = []
     for year in sorted(df["YEAR"].unique()):
-        upto = scored[scored["YEAR"] <= year]
-        m = upto[upto["OWNER"] == "Matt"]
-        r = upto[upto["OWNER"] == "Ryan"]
-        if len(m) == 0 and len(r) == 0:
+        upto = df[df["YEAR"] <= year]
+        m = _owner_aggregate(upto[upto["OWNER"] == "Matt"])
+        r = _owner_aggregate(upto[upto["OWNER"] == "Ryan"])
+        if m["scored_count"] == 0 and r["scored_count"] == 0:
             continue
-        m_avg  = float(m["OVERALL SCORE"].mean()) if len(m) else 0.0
-        r_avg  = float(r["OVERALL SCORE"].mean()) if len(r) else 0.0
+        m_avg, r_avg = m["avg_score"], r["avg_score"]
         leader = "Matt" if m_avg > r_avg else "Ryan" if r_avg > m_avg else "Tie"
         rows.append({
             "year": int(year), "matt_avg": m_avg, "ryan_avg": r_avg,
             "leader": leader, "gap": abs(m_avg - r_avg),
-            "matt_n": int(len(m)), "ryan_n": int(len(r)),
+            "matt_n": m["scored_count"], "ryan_n": r["scored_count"],
         })
     return rows
 
