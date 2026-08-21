@@ -367,7 +367,8 @@ st.markdown(
 )
 
 try:
-    _audit = compute_baseline_audit(df)
+    _audit_df = load_players()
+    _audit = compute_baseline_audit(_audit_df)
 
     st.markdown(
         f'<div class="fr-audit-box">'
