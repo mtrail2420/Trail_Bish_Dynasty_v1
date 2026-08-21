@@ -444,6 +444,155 @@ with r1c3:
 </div>""", unsafe_allow_html=True)
 
 # =============================================================================
+# ROW 7 — Dynasty DNA  (Drafting Identity, Matt vs Ryan)
+# =============================================================================
+# Shared engine: core.stats.compute_draft_dna(). Built once, consumed here;
+# any future feature needing this same round/position/era breakdown should
+# call that function rather than recomputing it on its own page.
+
+dna_matt = compute_draft_dna(df, "Matt")
+dna_ryan = compute_draft_dna(df, "Ryan")
+
+
+def _dna_stat_row(label: str, value: str, cls: str, sub: str = "") -> str:
+    sub_html = f'<div class="an-dna-sub">{sub}</div>' if sub else ""
+    return (
+        f'<div class="an-dna-row">'
+        f'<div class="an-dna-lbl">{label}</div>'
+        f'<div class="an-dna-val {cls}">{value}</div>'
+        f'{sub_html}'
+        f'</div>'
+    )
+
+
+def _dna_card(dna: dict, owner: str) -> str:
+    cls = "matt" if owner == "Matt" else "ryan"
+    bp, wp = dna["best_position"], dna["worst_position"]
+    br, wr = dna["best_round"], dna["worst_round"]
+    be     = dna["best_era"]
+
+    rows  = _dna_stat_row(
+        "Strongest Position", bp["name"] if bp else "—", cls,
+        f'{bp["avg"]:.1f} avg &middot; n={bp["n"]}' if bp else "",
+    )
+    rows += _dna_stat_row(
+        "Weakest Position", wp["name"] if wp else "—", cls,
+        f'{wp["avg"]:.1f} avg &middot; n={wp["n"]}' if wp else "",
+    )
+    rows += _dna_stat_row(
+        "Best Round", br["name"] if br else "—", cls,
+        f'{br["avg"]:.1f} avg &middot; n={br["n"]}' if br else "",
+    )
+    rows += _dna_stat_row(
+        "Toughest Round", wr["name"] if wr else "—", cls,
+        f'{wr["avg"]:.1f} avg &middot; n={wr["n"]}' if wr else "",
+    )
+    rows += _dna_stat_row(
+        "Best Era", be["name"] if be else "—", cls,
+        f'{be["avg"]:.1f} avg &middot; n={be["n"]}' if be else "",
+    )
+    rows += _dna_stat_row(
+        "Late-Round Hit Rate", f'{dna["late_round_hit_rate"]:.0f}%', cls,
+        "Round 4+ / UDFA picks reaching Starter tier or better",
+    )
+    rows += _dna_stat_row(
+        "Franchise Conversion", f'{dna["franchise_conversion_rate"]:.0f}%', cls,
+        f'of {dna["total"]} total selections',
+    )
+
+    return (
+        f'<div class="an-panel">'
+        f'<div class="an-label">{owner.upper()} &middot; DRAFTING IDENTITY</div>'
+        f'{rows}'
+        f'</div>'
+    )
+
+
+_dna_col1, _dna_col2 = st.columns(2)
+with _dna_col1:
+    st.markdown(_dna_card(dna_matt, "Matt"), unsafe_allow_html=True)
+with _dna_col2:
+    st.markdown(_dna_card(dna_ryan, "Ryan"), unsafe_allow_html=True)
+
+# =============================================================================
+# ROW 8 — Dynasty Power Index + "Why Is [Owner] Winning?"
+# =============================================================================
+# Built as one feature, per explicit direction: the index is never shown
+# without its explanation. Shared engine: core.stats.compute_power_index(),
+# itself built on compute_owner_stats() + compute_draft_dna() -- no new
+# source of truth, no individual player re-scored.
+
+power = compute_power_index(df)
+_pi_leader_cls = "matt" if power["leader"] == "Matt" else "ryan"
+
+_pi_col1, _pi_col2 = st.columns([1, 1.3])
+
+with _pi_col1:
+    st.markdown(f"""
+<div class="an-panel">
+<div class="an-label">DYNASTY POWER INDEX</div>
+<div class="an-kpi-hero">
+<div class="an-kpi-hero-val an-val-{_pi_leader_cls}">+{power['gap']:.1f}</div>
+<div class="an-kpi-hero-label">{power['leader'].upper()} LEADS</div>
+</div>
+<div class="an-kpi-minis">
+<div class="an-kpi-mini">
+<div class="an-kpi-mini-val an-val-matt">{power['matt']['power_index']:.1f}</div>
+<div class="an-kpi-mini-label">Matt</div>
+</div>
+<div class="an-kpi-mini">
+<div class="an-kpi-mini-val an-val-ryan">{power['ryan']['power_index']:.1f}</div>
+<div class="an-kpi-mini-label">Ryan</div>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+with _pi_col2:
+    _why_rows = ""
+    for c in power["components"]:
+        c_cls = "matt" if c["leader"] == "Matt" else "ryan" if c["leader"] == "Ryan" else "neutral"
+        sign  = "+" if c["contribution"] >= 0 else "−"
+        _why_rows += _dna_stat_row(
+            c["label"], f'{sign}{abs(c["contribution"]):.2f} {c["leader"]}', c_cls,
+            f'Matt {c["matt_value"]:.1f} &middot; Ryan {c["ryan_value"]:.1f} &middot; weight {c["weight"]:.0%}',
+        )
+
+    _sp = power["sharpest_position"]
+    _sp_html = ""
+    if _sp:
+        _sp_cls = "matt" if _sp["leader"] == "Matt" else "ryan"
+        _why_rows += _dna_stat_row(
+            "Sharpest Positional Edge", f'{_sp["position"]} &middot; {_sp["leader"]}', _sp_cls,
+            f'Matt {_sp["matt_avg"]:.1f} &middot; Ryan {_sp["ryan_avg"]:.1f} avg &middot; not part of the index above',
+        )
+
+    st.markdown(
+        f'<div class="an-panel">'
+        f'<div class="an-label">WHY {power["leader"].upper()} LEADS</div>'
+        f'{_why_rows}'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+# =============================================================================
+# DEEP ANALYTICS
+# =============================================================================
+# Detailed reference material -- position/badge/score/tier breakdowns.
+# DNA and Power Index above are the "story"; everything below is the data
+# behind it, for anyone who wants to go deeper. Reordered per the whole-
+# product audit: these used to run first, ahead of the DNA/Power Index/
+# Why narrative, so a first-time viewer hit six rows of reference charts
+# before reaching the two sections that actually say who's ahead and why.
+
+st.markdown(
+    '<div style="text-align:center;margin:32px 0 8px;">'
+    '<span style="font-size:11px;font-weight:800;letter-spacing:3px;'
+    'color:var(--text-label);text-transform:uppercase;">'
+    '&#9670;&nbsp;&nbsp;DEEP ANALYTICS&nbsp;&nbsp;&#9670;</span></div>',
+    unsafe_allow_html=True,
+)
+
+# =============================================================================
 # ROW 2 — Position Distribution | Badge Distribution
 # =============================================================================
 r2c1, r2c2 = st.columns([1.4, 1])
@@ -714,133 +863,3 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# =============================================================================
-# ROW 7 — Dynasty DNA  (Drafting Identity, Matt vs Ryan)
-# =============================================================================
-# Shared engine: core.stats.compute_draft_dna(). Built once, consumed here;
-# any future feature needing this same round/position/era breakdown should
-# call that function rather than recomputing it on its own page.
-
-dna_matt = compute_draft_dna(df, "Matt")
-dna_ryan = compute_draft_dna(df, "Ryan")
-
-
-def _dna_stat_row(label: str, value: str, cls: str, sub: str = "") -> str:
-    sub_html = f'<div class="an-dna-sub">{sub}</div>' if sub else ""
-    return (
-        f'<div class="an-dna-row">'
-        f'<div class="an-dna-lbl">{label}</div>'
-        f'<div class="an-dna-val {cls}">{value}</div>'
-        f'{sub_html}'
-        f'</div>'
-    )
-
-
-def _dna_card(dna: dict, owner: str) -> str:
-    cls = "matt" if owner == "Matt" else "ryan"
-    bp, wp = dna["best_position"], dna["worst_position"]
-    br, wr = dna["best_round"], dna["worst_round"]
-    be     = dna["best_era"]
-
-    rows  = _dna_stat_row(
-        "Strongest Position", bp["name"] if bp else "—", cls,
-        f'{bp["avg"]:.1f} avg &middot; n={bp["n"]}' if bp else "",
-    )
-    rows += _dna_stat_row(
-        "Weakest Position", wp["name"] if wp else "—", cls,
-        f'{wp["avg"]:.1f} avg &middot; n={wp["n"]}' if wp else "",
-    )
-    rows += _dna_stat_row(
-        "Best Round", br["name"] if br else "—", cls,
-        f'{br["avg"]:.1f} avg &middot; n={br["n"]}' if br else "",
-    )
-    rows += _dna_stat_row(
-        "Toughest Round", wr["name"] if wr else "—", cls,
-        f'{wr["avg"]:.1f} avg &middot; n={wr["n"]}' if wr else "",
-    )
-    rows += _dna_stat_row(
-        "Best Era", be["name"] if be else "—", cls,
-        f'{be["avg"]:.1f} avg &middot; n={be["n"]}' if be else "",
-    )
-    rows += _dna_stat_row(
-        "Late-Round Hit Rate", f'{dna["late_round_hit_rate"]:.0f}%', cls,
-        "Round 4+ / UDFA picks reaching Starter tier or better",
-    )
-    rows += _dna_stat_row(
-        "Franchise Conversion", f'{dna["franchise_conversion_rate"]:.0f}%', cls,
-        f'of {dna["total"]} total selections',
-    )
-
-    return (
-        f'<div class="an-panel">'
-        f'<div class="an-label">{owner.upper()} &middot; DRAFTING IDENTITY</div>'
-        f'{rows}'
-        f'</div>'
-    )
-
-
-_dna_col1, _dna_col2 = st.columns(2)
-with _dna_col1:
-    st.markdown(_dna_card(dna_matt, "Matt"), unsafe_allow_html=True)
-with _dna_col2:
-    st.markdown(_dna_card(dna_ryan, "Ryan"), unsafe_allow_html=True)
-
-# =============================================================================
-# ROW 8 — Dynasty Power Index + "Why Is [Owner] Winning?"
-# =============================================================================
-# Built as one feature, per explicit direction: the index is never shown
-# without its explanation. Shared engine: core.stats.compute_power_index(),
-# itself built on compute_owner_stats() + compute_draft_dna() -- no new
-# source of truth, no individual player re-scored.
-
-power = compute_power_index(df)
-_pi_leader_cls = "matt" if power["leader"] == "Matt" else "ryan"
-
-_pi_col1, _pi_col2 = st.columns([1, 1.3])
-
-with _pi_col1:
-    st.markdown(f"""
-<div class="an-panel">
-<div class="an-label">DYNASTY POWER INDEX</div>
-<div class="an-kpi-hero">
-<div class="an-kpi-hero-val an-val-{_pi_leader_cls}">+{power['gap']:.1f}</div>
-<div class="an-kpi-hero-label">{power['leader'].upper()} LEADS</div>
-</div>
-<div class="an-kpi-minis">
-<div class="an-kpi-mini">
-<div class="an-kpi-mini-val an-val-matt">{power['matt']['power_index']:.1f}</div>
-<div class="an-kpi-mini-label">Matt</div>
-</div>
-<div class="an-kpi-mini">
-<div class="an-kpi-mini-val an-val-ryan">{power['ryan']['power_index']:.1f}</div>
-<div class="an-kpi-mini-label">Ryan</div>
-</div>
-</div>
-</div>""", unsafe_allow_html=True)
-
-with _pi_col2:
-    _why_rows = ""
-    for c in power["components"]:
-        c_cls = "matt" if c["leader"] == "Matt" else "ryan" if c["leader"] == "Ryan" else "neutral"
-        sign  = "+" if c["contribution"] >= 0 else "−"
-        _why_rows += _dna_stat_row(
-            c["label"], f'{sign}{abs(c["contribution"]):.2f} {c["leader"]}', c_cls,
-            f'Matt {c["matt_value"]:.1f} &middot; Ryan {c["ryan_value"]:.1f} &middot; weight {c["weight"]:.0%}',
-        )
-
-    _sp = power["sharpest_position"]
-    _sp_html = ""
-    if _sp:
-        _sp_cls = "matt" if _sp["leader"] == "Matt" else "ryan"
-        _why_rows += _dna_stat_row(
-            "Sharpest Positional Edge", f'{_sp["position"]} &middot; {_sp["leader"]}', _sp_cls,
-            f'Matt {_sp["matt_avg"]:.1f} &middot; Ryan {_sp["ryan_avg"]:.1f} avg &middot; not part of the index above',
-        )
-
-    st.markdown(
-        f'<div class="an-panel">'
-        f'<div class="an-label">WHY {power["leader"].upper()} LEADS</div>'
-        f'{_why_rows}'
-        f'</div>',
-        unsafe_allow_html=True,
-    )

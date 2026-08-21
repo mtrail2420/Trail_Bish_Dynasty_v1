@@ -176,11 +176,6 @@ color:#4a6080;flex:1;}
 .db-momentum-trend-val.flat{color:#94a3b8;}
 </style>""", unsafe_allow_html=True)
 
-st.markdown(
-    section_header("MOMENTUM METER", "Avg score trend · last 5 scored draft classes per owner"),
-    unsafe_allow_html=True,
-)
-
 _cs = compute_class_stats(df)
 # Consolidation (per Chip's audit): the year-by-year avg-score math below
 # used to be computed independently here via a second pass over _cs. It's
@@ -239,20 +234,17 @@ def _build_momentum_card(owner: str, cls_name: str, limit: int | None = 5) -> st
         f'</div>'
     )
 
-_m_html = (
-    '<div class="db-momentum-wrap">'
-    + _build_momentum_card("Matt", "matt")
-    + _build_momentum_card("Ryan", "ryan")
-    + '</div>'
-)
-st.markdown(_m_html, unsafe_allow_html=True)
-
-# ── Rivalry History — full 2007→present trend (V2 feature) ──────────────────
-# Same visual pattern as Momentum Meter above, but the complete history
-# instead of just the last 5 classes — "the story of the rivalry" at a glance.
+# ── Rivalry History — full 2007→present trend, INCLUDING recent momentum ────
+# Per the whole-product audit: this used to be two sections. The standalone
+# "Momentum Meter" (last 5 classes) was a strict subset of this one -- same
+# data, same "Recent trend" readout at the bottom, just fewer rows. Removed
+# rather than "merged", since there was nothing in it that this section
+# doesn't already show. _build_momentum_card() always ends with the same
+# recent-trend line regardless of how many years it's given, so nothing
+# about "current movement" was lost by dropping the smaller duplicate.
 
 st.markdown(
-    section_header("RIVALRY HISTORY", "Avg score by draft class · every year, 2007 → present"),
+    section_header("RIVALRY HISTORY", "Avg score by draft class · every year, 2007 → present · including recent momentum"),
     unsafe_allow_html=True,
 )
 
