@@ -183,15 +183,15 @@ st.markdown(
 
 _cs = compute_class_stats(df)
 
-def _build_momentum_card(owner: str, cls_name: str) -> str:
-    """Build the momentum card HTML for one owner."""
+def _build_momentum_card(owner: str, cls_name: str, limit: int | None = 5) -> str:
+    """Build the momentum card HTML for one owner. limit=None shows full history."""
     odf = _cs[(_cs["OWNER"] == owner) & (_cs["scored"] > 0)].sort_values("YEAR")
-    last5 = odf.tail(5)
-    if len(last5) == 0:
+    recent = odf.tail(limit) if limit else odf
+    if len(recent) == 0:
         return ""
-    max_avg = max(last5["avg_score"].max(), 1)
+    max_avg = max(recent["avg_score"].max(), 1)
     rows_html = ""
-    for _, r in last5.iterrows():
+    for _, r in recent.iterrows():
         bar_w = round(r["avg_score"] / max_avg * 100)
         rows_html += (
             f'<div class="db-momentum-row">'
@@ -203,7 +203,7 @@ def _build_momentum_card(owner: str, cls_name: str) -> str:
             f'</div>'
         )
     # Trend: compare last vs previous
-    avgs = last5["avg_score"].tolist()
+    avgs = recent["avg_score"].tolist()
     if len(avgs) >= 2:
         delta_val = avgs[-1] - avgs[-2]
         if delta_val > 1:
@@ -235,6 +235,23 @@ _m_html = (
     + '</div>'
 )
 st.markdown(_m_html, unsafe_allow_html=True)
+
+# ── Rivalry History — full 2007→present trend (V2 feature) ──────────────────
+# Same visual pattern as Momentum Meter above, but the complete history
+# instead of just the last 5 classes — "the story of the rivalry" at a glance.
+
+st.markdown(
+    section_header("RIVALRY HISTORY", "Avg score by draft class · every year, 2007 → present"),
+    unsafe_allow_html=True,
+)
+
+_rh_html = (
+    '<div class="db-momentum-wrap">'
+    + _build_momentum_card("Matt", "matt", limit=None)
+    + _build_momentum_card("Ryan", "ryan", limit=None)
+    + '</div>'
+)
+st.markdown(_rh_html, unsafe_allow_html=True)
 
 # ── What's Coming ──────────────────────────────────────────────────────────────
 # Forward-looking section: 2026 class status.

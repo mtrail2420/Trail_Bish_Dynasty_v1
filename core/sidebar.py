@@ -49,6 +49,7 @@ _NAV: list[tuple[str, str, str]] = [
     ("🏛️", "Legacy",        "pages/Legacy.py"),
     ("📈",  "Analytics",     "pages/Analytics.py"),
     ("📐",  "Formula",       "pages/Formula.py"),
+    ("😈",  "Smack Talk",    "pages/SmackTalk.py"),
 ]
 
 

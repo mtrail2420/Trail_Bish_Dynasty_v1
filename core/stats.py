@@ -539,3 +539,214 @@ def compute_series_record(class_stats: pd.DataFrame) -> dict:
         "ties":          ties,
         "total_decided": matt_wins + ryan_wins + ties,
     }
+
+
+# ---------------------------------------------------------------------------
+# Draft Class Retrospectives — narrative summary per class (V2 feature)
+# ---------------------------------------------------------------------------
+
+def class_retrospective(year_df: pd.DataFrame) -> dict:
+    """
+    Compute the narrative retrospective for one draft class: best pick,
+    biggest miss, best late-round steal, and a one-line summary sentence.
+
+    ``year_df`` should already be filtered to a single YEAR (as War Room's
+    Class Deep Dive already does). Pure presentation logic — does not
+    change or reinterpret OVERALL SCORE or CAREER_TIER in any way.
+    """
+    scored = year_df.dropna(subset=["OVERALL SCORE"])
+    if scored.empty:
+        return {
+            "best_pick": None, "biggest_miss": None, "steal": None,
+            "summary": "This class hasn't been scored yet — check back once it develops.",
+        }
+
+    def _row(r) -> dict:
+        return {
+            "name":   str(r["PLAYER"]),
+            "owner":  str(r["OWNER"]),
+            "score":  float(r["OVERALL SCORE"]),
+            "round":  int(r["ROUND"]) if pd.notna(r["ROUND"]) else None,
+            "tier":   str(r["CAREER_TIER"]),
+        }
+
+    best_pick_row = scored.loc[scored["OVERALL SCORE"].idxmax()]
+    best_pick = _row(best_pick_row)
+
+    # Biggest miss: worst score among Round 1-2 picks only (a "miss" needs
+    # draft capital spent on it — a bad Round 7 pick isn't a miss, it's
+    # expected variance).
+    early = scored[scored["ROUND"] <= 2]
+    biggest_miss = _row(early.loc[early["OVERALL SCORE"].idxmin()]) if not early.empty else None
+
+    # Steal: best score among Round 4+ picks (mirrors the Dashboard's
+    # "Best Late-Round Picks" definition, scoped to this one class).
+    late = scored[scored["ROUND"] >= 4]
+    steal = _row(late.loc[late["OVERALL SCORE"].idxmax()]) if not late.empty else None
+
+    m_avg = scored[scored["OWNER"] == "Matt"]["OVERALL SCORE"].mean()
+    r_avg = scored[scored["OWNER"] == "Ryan"]["OVERALL SCORE"].mean()
+    m_avg = 0.0 if pd.isna(m_avg) else float(m_avg)
+    r_avg = 0.0 if pd.isna(r_avg) else float(r_avg)
+
+    if m_avg > r_avg:
+        winner_sentence = f"Matt won this class, averaging {m_avg:.1f} to Ryan's {r_avg:.1f}."
+    elif r_avg > m_avg:
+        winner_sentence = f"Ryan won this class, averaging {r_avg:.1f} to Matt's {m_avg:.1f}."
+    else:
+        winner_sentence = f"This class was a dead heat — both owners averaged {m_avg:.1f}."
+
+    headline = f"{best_pick['name']} ({best_pick['owner']}) was the class's best player at {best_pick['score']:.1f}."
+    if steal and steal["name"] != best_pick["name"]:
+        headline += f" {steal['owner']}'s Round {steal['round']} pick of {steal['name']} was the steal of the class."
+    if biggest_miss:
+        headline += f" {biggest_miss['owner']}'s Round {biggest_miss['round']} selection of {biggest_miss['name']} never lived up to the pick."
+
+    return {
+        "best_pick": best_pick,
+        "biggest_miss": biggest_miss,
+        "steal": steal,
+        "summary": f"{winner_sentence} {headline}",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Power Rankings History — Matt vs Ryan avg score by year (V2 feature)
+# ---------------------------------------------------------------------------
+
+def compute_power_history(class_df: pd.DataFrame) -> list[dict]:
+    """
+    Year-by-year Matt vs Ryan average score, for the rivalry-over-time
+    trend view. Takes the already-computed class_df from
+    ``compute_class_stats`` — no re-derivation of scores.
+
+    Returns one dict per year: {year, matt_avg, ryan_avg, leader}.
+    Years with no scored picks yet (future/pending classes) are excluded.
+    """
+    rows = []
+    for year in sorted(class_df["YEAR"].unique()):
+        year_rows = class_df[class_df["YEAR"] == year]
+        m = year_rows[year_rows["OWNER"] == "Matt"]
+        r = year_rows[year_rows["OWNER"] == "Ryan"]
+        m_scored = int(m["scored"].iloc[0]) if not m.empty else 0
+        r_scored = int(r["scored"].iloc[0]) if not r.empty else 0
+        if m_scored == 0 and r_scored == 0:
+            continue
+        m_avg = float(m["avg_score"].iloc[0]) if not m.empty else 0.0
+        r_avg = float(r["avg_score"].iloc[0]) if not r.empty else 0.0
+        leader = "Matt" if m_avg > r_avg else "Ryan" if r_avg > m_avg else "Tie"
+        rows.append({
+            "year": int(year), "matt_avg": m_avg, "ryan_avg": r_avg, "leader": leader,
+        })
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# Dynasty Awards — single-champion badges, dynasty-wide (V2 feature)
+# ---------------------------------------------------------------------------
+
+def compute_dynasty_awards(df: pd.DataFrame) -> dict:
+    """
+    Four dynasty-wide single-champion awards, computed straight from
+    existing columns. Presentation-only — none of these feed back into
+    OVERALL SCORE or CAREER_TIER.
+    """
+    scored = df.dropna(subset=["OVERALL SCORE"])
+    award_cols = ["MVP", "OPOY", "DPOY", "OROY", "DROY", "ALL_PRO", "SB Win", "SB_MVP"]
+    present_cols = [c for c in award_cols if c in scored.columns]
+
+    def _pick(sub_df: pd.DataFrame, by: str, ascending: bool) -> dict | None:
+        if sub_df.empty:
+            return None
+        row = sub_df.sort_values(by, ascending=ascending).iloc[0]
+        return {
+            "name":  str(row["PLAYER"]),
+            "owner": str(row["OWNER"]),
+            "value": row[by],
+            "round": int(row["ROUND"]) if pd.notna(row["ROUND"]) else None,
+        }
+
+    # Biggest Steal: best score among Round 4+ picks, dynasty-wide.
+    late = scored[scored["ROUND"] >= 4]
+    steal = _pick(late, "OVERALL SCORE", ascending=False)
+
+    # Biggest Bust: worst score among Round 1-2 picks, dynasty-wide.
+    early = scored[scored["ROUND"] <= 2]
+    bust = None
+    if not early.empty:
+        row = early.sort_values("OVERALL SCORE", ascending=True).iloc[0]
+        bust = {
+            "name": str(row["PLAYER"]), "owner": str(row["OWNER"]),
+            "value": float(row["OVERALL SCORE"]), "round": int(row["ROUND"]) if pd.notna(row["ROUND"]) else None,
+        }
+
+    # Most Decorated: highest total award count.
+    decorated = None
+    if present_cols:
+        tmp = scored.copy()
+        tmp["_award_total"] = tmp[present_cols].fillna(0).sum(axis=1)
+        if tmp["_award_total"].max() > 0:
+            row = tmp.sort_values("_award_total", ascending=False).iloc[0]
+            decorated = {
+                "name": str(row["PLAYER"]), "owner": str(row["OWNER"]),
+                "value": int(row["_award_total"]), "round": None,
+            }
+
+    # Most Durable: LONGEVITY is a categorical field (Elite/High/Moderate/Low/
+    # Minimal), not a number of years — sorting it alphabetically is meaningless
+    # (tested against live data and caught this before shipping). Instead: among
+    # players in the top "Elite" longevity tier, take the highest OVERALL SCORE.
+    durable = None
+    if "LONGEVITY" in scored.columns:
+        elite_longevity = scored[scored["LONGEVITY"] == "Elite"]
+        if not elite_longevity.empty:
+            row = elite_longevity.sort_values("OVERALL SCORE", ascending=False).iloc[0]
+            durable = {
+                "name": str(row["PLAYER"]), "owner": str(row["OWNER"]),
+                "value": "Elite", "round": None,
+            }
+
+    return {"steal": steal, "bust": bust, "decorated": decorated, "durable": durable}
+
+
+# ---------------------------------------------------------------------------
+# Smack Talk Engine — fact pack (V2 feature)
+# ---------------------------------------------------------------------------
+
+def compute_smack_talk_facts(df: pd.DataFrame, class_df: pd.DataFrame) -> dict:
+    """
+    Gather the real numbers the Smack Talk Engine needs, per owner.
+    Pure fact-gathering — no sentence generation, no randomness, so it
+    stays consistent with this file's "pure functions" rule. The page
+    layer turns these facts into actual trash talk text.
+    """
+    facts: dict = {}
+    record = compute_series_record(class_df)
+    rushmore = compute_mount_rushmore(df)
+    _award_cols = ["MVP", "OPOY", "DPOY", "OROY", "DROY", "ALL_PRO", "SB Win", "SB_MVP"]
+
+    for owner in ["Matt", "Ryan"]:
+        odf = df[df["OWNER"] == owner]
+        scored = odf.dropna(subset=["OVERALL SCORE"])
+        best = rushmore[owner][0] if rushmore[owner] else None
+        worst = (
+            scored.sort_values("OVERALL SCORE", ascending=True).iloc[0].to_dict()
+            if len(scored) else None
+        )
+        present_cols = [c for c in _award_cols if c in odf.columns]
+        award_total = int(odf[present_cols].fillna(0).sum().sum()) if present_cols else 0
+
+        facts[owner] = {
+            "avg_score":  float(scored["OVERALL SCORE"].mean()) if len(scored) else 0.0,
+            "franchise":  int(odf["CAREER_TIER"].isin(FRANCHISE_TIERS).sum()),
+            "busts":      int((odf["CAREER_TIER"] == "Bust").sum()),
+            "best_name":  best["PLAYER"] if best else "nobody worth mentioning",
+            "best_score": float(best["OVERALL SCORE"]) if best else 0.0,
+            "worst_name": worst["PLAYER"] if worst else "nobody worth mentioning",
+            "worst_score": float(worst["OVERALL SCORE"]) if worst else 0.0,
+            "worst_round": int(worst["ROUND"]) if worst and pd.notna(worst["ROUND"]) else None,
+            "award_total": award_total,
+        }
+
+    facts["class_wins"] = {"Matt": record["matt_wins"], "Ryan": record["ryan_wins"], "ties": record["ties"]}
+    return facts

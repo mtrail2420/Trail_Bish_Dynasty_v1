@@ -9,6 +9,7 @@ from core.stats import (
     score_leader,
     compute_class_stats,
     compute_series_record,
+    class_retrospective,
 )
 from core.utils import safe_int, safe_str, is_score_pending, CURRENT_YEAR
 from core.components import (
@@ -246,6 +247,19 @@ st.markdown(
     f'<span>Ryan avg <b style="color:#E63B3B">{r_avg_str}</b></span>'
     f'{winner_badge(class_w)}'
     f'</div>',
+    unsafe_allow_html=True,
+)
+
+# ── Class Retrospective — narrative summary (V2 feature) ────────────────────
+
+retro = class_retrospective(year_df)
+
+st.markdown(
+    f'<div class="tb-callout tb-gold" style="margin-bottom:14px;">'
+    f'<div class="tb-callout-label">CLASS RETROSPECTIVE</div>'
+    f'<div class="tb-callout-detail" style="font-size:13px;line-height:1.7;margin-top:6px;">'
+    f'{retro["summary"]}'
+    f'</div></div>',
     unsafe_allow_html=True,
 )
 

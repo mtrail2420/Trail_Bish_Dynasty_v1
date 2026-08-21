@@ -10,6 +10,7 @@ from core.stats import (
     rank_players_by_position,
     POSITION_GROUPS,
     MIN_RANKED_SAMPLE,
+    compute_dynasty_awards,
 )
 from core.utils import safe_int, is_score_pending
 from core.components import (
@@ -25,6 +26,7 @@ from core.components import (
     comparison_panel,
     grade_badge,
     winner_badge,
+    callout,
 )
 
 st.set_page_config(
@@ -243,5 +245,71 @@ with right_col:
             f'<div style="margin-top:10px;text-align:center;">'
             f'{winner_badge("Tie", "Tied")}'
             f'</div>',
+            unsafe_allow_html=True,
+        )
+
+# =============================================================================
+# DYNASTY AWARDS (V2 feature)
+# Four single-champion badges computed straight from existing player data.
+# Presentation only — none of this feeds back into OVERALL SCORE or CAREER_TIER.
+# =============================================================================
+
+st.markdown(
+    section_header("DYNASTY AWARDS", "Dynasty-wide superlatives, computed from real data"),
+    unsafe_allow_html=True,
+)
+
+_awards = compute_dynasty_awards(df)
+
+def _award_color(owner: str | None) -> str:
+    return "blue" if owner == "Matt" else "red" if owner == "Ryan" else "gold"
+
+_aw1, _aw2, _aw3, _aw4 = st.columns(4)
+
+with _aw1:
+    a = _awards["steal"]
+    if a:
+        st.markdown(
+            callout(
+                "BIGGEST STEAL", a["name"],
+                f"{a['owner']} · Rd {a['round']} · Score {a['value']:.1f}",
+                _award_color(a["owner"]),
+            ),
+            unsafe_allow_html=True,
+        )
+
+with _aw2:
+    a = _awards["bust"]
+    if a:
+        st.markdown(
+            callout(
+                "BIGGEST BUST", a["name"],
+                f"{a['owner']} · Rd {a['round']} · Score {a['value']:.1f}",
+                _award_color(a["owner"]),
+            ),
+            unsafe_allow_html=True,
+        )
+
+with _aw3:
+    a = _awards["decorated"]
+    if a:
+        st.markdown(
+            callout(
+                "MOST DECORATED", a["name"],
+                f"{a['owner']} · {a['value']} total awards",
+                _award_color(a["owner"]),
+            ),
+            unsafe_allow_html=True,
+        )
+
+with _aw4:
+    a = _awards["durable"]
+    if a:
+        st.markdown(
+            callout(
+                "MOST DURABLE", a["name"],
+                f"{a['owner']} · Elite longevity",
+                _award_color(a["owner"]),
+            ),
             unsafe_allow_html=True,
         )

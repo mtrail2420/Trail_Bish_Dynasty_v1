@@ -2,7 +2,7 @@ import html as _html
 
 import streamlit as st
 
-from core.data_loader import load_man_status, workbook_exists
+from core.data_loader import load_man_status, load_players, workbook_exists
 from core.sidebar import render_sidebar
 from core.stats import compute_ms_summary, ms_winner_state
 from core.utils import safe_int, FIRST_YEAR, CURRENT_YEAR
@@ -253,3 +253,99 @@ for _, row in ms_df.sort_values("YEAR").iterrows():
 momentum_html += "</div></div></div>"
 
 st.markdown(momentum_html, unsafe_allow_html=True)
+
+# =============================================================================
+# SECTION 6 — BUILD YOUR OWN BATTLE (V2 feature)
+# Free-choice player comparison, not limited to the pre-curated same-position
+# matchups above. Pulls straight from the full 354-player roster.
+# =============================================================================
+
+st.markdown(
+    '<div class="tb-ms-divider"><span>⚔️ BUILD YOUR OWN BATTLE</span></div>',
+    unsafe_allow_html=True,
+)
+
+_players_df = load_players()
+_matt_pool  = _players_df[_players_df["OWNER"] == "Matt"].dropna(subset=["OVERALL SCORE"]).sort_values("PLAYER")
+_ryan_pool  = _players_df[_players_df["OWNER"] == "Ryan"].dropna(subset=["OVERALL SCORE"]).sort_values("PLAYER")
+
+_bb_c1, _bb_c2 = st.columns(2)
+with _bb_c1:
+    matt_pick_name = st.selectbox(
+        "Matt's player", options=_matt_pool["PLAYER"].tolist(), key="bb_matt",
+    )
+with _bb_c2:
+    ryan_pick_name = st.selectbox(
+        "Ryan's player", options=_ryan_pool["PLAYER"].tolist(), key="bb_ryan",
+    )
+
+_m_row = _matt_pool[_matt_pool["PLAYER"] == matt_pick_name].iloc[0]
+_r_row = _ryan_pool[_ryan_pool["PLAYER"] == ryan_pick_name].iloc[0]
+
+_ORDINAL = {"Elite": 4, "High": 3, "Moderate": 2, "Low": 1, "Minimal": 0}
+_AWARD_COLS_BB = ["MVP", "OPOY", "DPOY", "OROY", "DROY", "ALL_PRO", "SB Win", "SB_MVP"]
+
+def _bb_winner_numeric(m_val: float, r_val: float) -> str:
+    if m_val > r_val:
+        return "Matt"
+    if r_val > m_val:
+        return "Ryan"
+    return ""
+
+def _bb_winner_ordinal(m_val: str, r_val: str) -> str:
+    return _bb_winner_numeric(_ORDINAL.get(m_val, -1), _ORDINAL.get(r_val, -1))
+
+m_score = float(_m_row["OVERALL SCORE"])
+r_score = float(_r_row["OVERALL SCORE"])
+m_awards = int(sum(safe_int(_m_row.get(c, 0)) for c in _AWARD_COLS_BB))
+r_awards = int(sum(safe_int(_r_row.get(c, 0)) for c in _AWARD_COLS_BB))
+
+_bb_rows = [
+    rivalry_stat_row("Overall Score", f"{m_score:.1f}", f"{r_score:.1f}", _bb_winner_numeric(m_score, r_score)),
+    rivalry_stat_row("Career Tier", str(_m_row["CAREER_TIER"]), str(_r_row["CAREER_TIER"]), ""),
+    rivalry_stat_row(
+        "Production", str(_m_row["PRODUCTION"]), str(_r_row["PRODUCTION"]),
+        _bb_winner_ordinal(str(_m_row["PRODUCTION"]), str(_r_row["PRODUCTION"])),
+    ),
+    rivalry_stat_row(
+        "Longevity", str(_m_row["LONGEVITY"]), str(_r_row["LONGEVITY"]),
+        _bb_winner_ordinal(str(_m_row["LONGEVITY"]), str(_r_row["LONGEVITY"])),
+    ),
+    rivalry_stat_row(
+        "Championship Impact", str(_m_row["CHAMPIONSHIP_IMPACT"]), str(_r_row["CHAMPIONSHIP_IMPACT"]),
+        _bb_winner_ordinal(str(_m_row["CHAMPIONSHIP_IMPACT"]), str(_r_row["CHAMPIONSHIP_IMPACT"])),
+    ),
+    rivalry_stat_row("Total Awards", str(m_awards), str(r_awards), _bb_winner_numeric(m_awards, r_awards)),
+    rivalry_stat_row(
+        "Draft Capital", f"Rd {safe_int(_m_row['ROUND'])} · {int(_m_row['YEAR'])}",
+        f"Rd {safe_int(_r_row['ROUND'])} · {int(_r_row['YEAR'])}", "",
+    ),
+]
+
+# Tally wins across the rows that produced a determinable winner
+_row_winners = [
+    _bb_winner_numeric(m_score, r_score),
+    _bb_winner_ordinal(str(_m_row["PRODUCTION"]), str(_r_row["PRODUCTION"])),
+    _bb_winner_ordinal(str(_m_row["LONGEVITY"]), str(_r_row["LONGEVITY"])),
+    _bb_winner_ordinal(str(_m_row["CHAMPIONSHIP_IMPACT"]), str(_r_row["CHAMPIONSHIP_IMPACT"])),
+    _bb_winner_numeric(m_awards, r_awards),
+]
+_matt_wins = _row_winners.count("Matt")
+_ryan_wins = _row_winners.count("Ryan")
+
+if _matt_wins > _ryan_wins:
+    _verdict, _v_winner = f"VERDICT: {matt_pick_name} wins {_matt_wins}–{_ryan_wins}", "Matt"
+elif _ryan_wins > _matt_wins:
+    _verdict, _v_winner = f"VERDICT: {ryan_pick_name} wins {_ryan_wins}–{_matt_wins}", "Ryan"
+else:
+    _verdict, _v_winner = f"VERDICT: Dead even, {_matt_wins}–{_ryan_wins}", "Tie"
+
+st.markdown(
+    comparison_panel(f"{matt_pick_name} vs {ryan_pick_name}", "".join(_bb_rows)),
+    unsafe_allow_html=True,
+)
+st.markdown(
+    f'<div style="text-align:center;margin-top:10px;font-size:15px;font-weight:900;'
+    f'letter-spacing:1px;">{winner_badge(_v_winner)} &nbsp; {_verdict}</div>',
+    unsafe_allow_html=True,
+)
