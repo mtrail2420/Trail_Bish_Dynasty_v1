@@ -2097,6 +2097,33 @@ a.tb-exhibit-anchor:hover{text-decoration:none}
 }
 .tb-timeline-milestone .tb-timeline-label{ color:#9A7820;font-weight:700; }
 
+/* --- Dynasty Timeline (curated milestone narrative) --- */
+/* Distinct from .tb-timeline-* above (the exhaustive per-year Draft Class
+   Timeline strip). This is a vertical, curated set of milestone events —
+   deliberately compact, reads like a historical record, not a dashboard. */
+.tb-milestone-wrap{ display:flex;flex-direction:column;gap:0;position:relative;
+    padding-left:28px;margin:8px 0 4px; }
+.tb-milestone-wrap::before{ content:'';position:absolute;top:6px;bottom:6px;left:7px;
+    width:2px;background:linear-gradient(180deg,transparent,rgba(180,130,20,.3) 6%,rgba(180,130,20,.3) 94%,transparent); }
+.tb-milestone-row{ position:relative;padding:14px 0;border-bottom:1px solid rgba(180,130,20,.12); }
+.tb-milestone-row:last-child{ border-bottom:none; }
+.tb-milestone-dot{ position:absolute;left:-28px;top:19px;width:11px;height:11px;
+    border-radius:50%;border:2px solid rgba(180,130,20,.3);background:var(--bg-app); }
+.tb-milestone-matt .tb-milestone-dot{ border-color:#2E7DF7;background:rgba(46,125,247,.2);box-shadow:0 0 8px rgba(46,125,247,.4); }
+.tb-milestone-ryan .tb-milestone-dot{ border-color:#E63B3B;background:rgba(230,59,59,.2);box-shadow:0 0 8px rgba(230,59,59,.4); }
+.tb-milestone-dynasty .tb-milestone-dot{ border-color:var(--gold);background:rgba(var(--gold-rgb),.2);box-shadow:0 0 8px rgba(var(--gold-rgb),.4); }
+.tb-milestone-head{ display:flex;align-items:baseline;gap:10px;margin-bottom:5px;flex-wrap:wrap; }
+.tb-milestone-year{ font-size:13px;font-weight:900;color:var(--gold);letter-spacing:.5px; }
+.tb-milestone-title{ font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase; }
+.tb-milestone-matt .tb-milestone-title{ color:#2E7DF7; }
+.tb-milestone-ryan .tb-milestone-title{ color:#E63B3B; }
+.tb-milestone-dynasty .tb-milestone-title{ color:var(--gold); }
+.tb-milestone-event{ font-size:13px;color:var(--text-primary);line-height:1.5;margin-bottom:4px; }
+.tb-milestone-why{ font-size:11px;color:#8A7550;font-style:italic;line-height:1.4;margin-bottom:6px; }
+.tb-milestone-metric{ display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;
+    color:#9A7820;background:rgba(180,130,20,.1);border:1px solid rgba(180,130,20,.25);
+    border-radius:20px;padding:3px 11px; }
+
 /* ================================================================
    MAN STATUS — Fight Card / Arena Identity
    All .tb-ms-* classes defined here ONLY.

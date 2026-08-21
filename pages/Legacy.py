@@ -15,6 +15,7 @@ from core.stats import (
     compute_hall_of_fame,
     compute_greatest_classes,
     compute_legacy_moments,
+    compute_dynasty_timeline,
 )
 from core.utils import safe_int, fmt_score
 from core.components import (
@@ -29,6 +30,7 @@ from core.components import (
     exhibit_card,
     award_count_tile,
     timeline_node,
+    milestone_card,
     legacy_spotlight_card,
 )
 
@@ -524,11 +526,37 @@ rec_html += "</div></div>"
 st.markdown(rec_html, unsafe_allow_html=True)
 
 # =============================================================================
-# SECTION 5 — DYNASTY TIMELINE
+# SECTION 5 — DYNASTY TIMELINE  (curated milestone narrative)
 # =============================================================================
+# "How did we get here?" — a small, deterministic set of milestone events,
+# not another dashboard. Distinct from the Draft Class Timeline strip below
+# (Section 6), which is exhaustive (one node per year); this is curated
+# (roughly 8 moments that actually matter). See core.stats.
+# compute_dynasty_timeline() for exact, disambiguated definitions of every
+# milestone shown here — nothing here is eyeballed or AI-generated.
 
 st.markdown(
     '<div id="dynasty-timeline" class="tb-lc-divider"><span>★ DYNASTY TIMELINE ★</span></div>',
+    unsafe_allow_html=True,
+)
+
+_milestones = compute_dynasty_timeline(df)
+_milestone_html = '<div class="tb-milestone-wrap">'
+for _m in _milestones:
+    _milestone_html += milestone_card(_m)
+_milestone_html += '</div>'
+st.markdown(_milestone_html, unsafe_allow_html=True)
+
+# =============================================================================
+# SECTION 6 — DRAFT CLASS TIMELINE  (every year, at a glance)
+# =============================================================================
+# The exhaustive companion to Section 5 above — one node per draft class,
+# not curated. Renamed from "Dynasty Timeline" (its original label) to
+# avoid colliding with the new curated section's name; nothing about this
+# section's logic changed.
+
+st.markdown(
+    '<div id="draft-class-timeline" class="tb-lc-divider"><span>★ DRAFT CLASS TIMELINE ★</span></div>',
     unsafe_allow_html=True,
 )
 

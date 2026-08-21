@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from core.utils import is_score_pending, UDFA_ROUND, format_round
+from core.utils import is_score_pending, UDFA_ROUND, format_round, FIRST_YEAR, fmt_score
 
 
 # ---------------------------------------------------------------------------
@@ -793,6 +793,246 @@ def compute_power_history(class_df: pd.DataFrame) -> list[dict]:
             "year": int(year), "matt_avg": m_avg, "ryan_avg": r_avg, "leader": leader,
         })
     return rows
+
+
+# ---------------------------------------------------------------------------
+# Dynasty Timeline — curated milestone narrative (Legacy Center, V2 feature)
+# ---------------------------------------------------------------------------
+#
+# Every milestone below has an explicit, disambiguated definition, decided
+# up front rather than left as a vague label -- "power swing" in particular
+# can mean several different things, so each one below states exactly which
+# it means and why. All of it is deterministic and derived from canonical
+# workbook fields; nothing here is a new score, a new data source, or an
+# AI-generated judgment call.
+#
+# Two distinct notions of "who's ahead" are used on purpose, and must not
+# be confused with each other:
+#   - compute_power_history() (above) is PER-CLASS: for one single draft
+#     year, who did better in that class alone. Used here only for
+#     "Biggest Draft-Class Swing".
+#   - compute_cumulative_power() (below) is CUMULATIVE / RUNNING: as of
+#     the end of year Y, averaging every scored pick either owner has
+#     made from FIRST_YEAR through Y. This is "the dynasty standing at
+#     that point in time" and is what every other milestone below means
+#     by "power", "lead", "swing", or "comeback".
+
+def compute_cumulative_power(df: pd.DataFrame) -> list[dict]:
+    """
+    Cumulative Matt-vs-Ryan standing, expanding year over year: "as of the
+    end of year Y, what does each owner's body of work look like so far."
+
+    This is distinct from compute_power_history(), which reports each
+    class in isolation. This function answers "who was ahead in the
+    dynasty as a whole at this point in history" -- the running average
+    across every scored pick made up to and including that year.
+
+    Returns one dict per year that has at least one cumulative scored
+    pick for either owner: {year, matt_avg, ryan_avg, leader, gap,
+    matt_n, ryan_n}. Years before either owner has a single scored pick
+    are omitted (there is no "standing" yet to report).
+    """
+    scored = df.dropna(subset=["OVERALL SCORE"])
+    rows: list[dict] = []
+    for year in sorted(df["YEAR"].unique()):
+        upto = scored[scored["YEAR"] <= year]
+        m = upto[upto["OWNER"] == "Matt"]
+        r = upto[upto["OWNER"] == "Ryan"]
+        if len(m) == 0 and len(r) == 0:
+            continue
+        m_avg  = float(m["OVERALL SCORE"].mean()) if len(m) else 0.0
+        r_avg  = float(r["OVERALL SCORE"].mean()) if len(r) else 0.0
+        leader = "Matt" if m_avg > r_avg else "Ryan" if r_avg > m_avg else "Tie"
+        rows.append({
+            "year": int(year), "matt_avg": m_avg, "ryan_avg": r_avg,
+            "leader": leader, "gap": abs(m_avg - r_avg),
+            "matt_n": int(len(m)), "ryan_n": int(len(r)),
+        })
+    return rows
+
+
+def compute_dynasty_timeline(df: pd.DataFrame) -> list[dict]:
+    """
+    Build the curated Dynasty Timeline: a small, deterministic set of
+    milestone events, each with a title, the triggering year, a one-line
+    "why it matters", a supporting metric, and an owner for color-coding.
+
+    Milestone definitions (each deliberately disambiguated):
+      - Dynasty Begins: FIRST_YEAR, static.
+      - First Franchise-Level Player: earliest YEAR among players whose
+        CAREER_TIER is Franchise or Legend. Ties broken by highest score.
+      - First Legend-Level Player: same, restricted to CAREER_TIER ==
+        "Legend" specifically.
+      - First Championship-Impact Player: earliest YEAR among players
+        with SB Win > 0. Ties broken by highest score.
+      - First Major Power Swing: the first year (via
+        compute_cumulative_power) where the cumulative leader differs
+        from the prior year's leader, AND both owners already have at
+        least MIN_RANKED_SAMPLE cumulative scored picks -- the same
+        small-sample threshold used everywhere else in this module, so
+        an early flip on 1-2 picks each doesn't get reported as
+        "major". This is a YEAR-OVER-YEAR LEADER CHANGE, not a class
+        win/loss and not a magnitude threshold.
+      - Biggest Draft-Class Swing: the single YEAR (via
+        compute_power_history, PER-CLASS) with the largest score gap
+        between Matt's and Ryan's picks in that one class alone --
+        deliberately NOT the cumulative dynasty-wide gap.
+      - Largest Owner Lead: the YEAR (via compute_cumulative_power) with
+        the largest CUMULATIVE gap in dynasty history to date, among
+        years where both owners have at least MIN_RANKED_SAMPLE
+        cumulative scored picks -- same reasoning as the power-swing
+        gate above.
+      - Biggest Comeback: compares the cumulative gap at its historical
+        peak to the cumulative gap in the most recent scored year --
+        the amount the trailing owner (from that peak) has since closed,
+        floored at 0 if the gap has only grown. Only reported if it's
+        > 0 and the peak year isn't the most recent year (there must be
+        something to have "come back" from).
+      - Current Dynasty State: the most recent entry from
+        compute_cumulative_power -- today's actual standing.
+
+    Returns a chronologically-sorted list of milestone dicts:
+      {year, title, event, why, metric, owner}
+    ``owner`` is "Matt", "Ryan", or "Dynasty" (for owner-neutral facts),
+    used purely for color-coding in the UI.
+    """
+    milestones: list[dict] = []
+    scored = df.dropna(subset=["OVERALL SCORE"])
+    cum    = compute_cumulative_power(df)
+    per_class = compute_power_history(compute_class_stats(df))
+
+    # ── Dynasty Begins ────────────────────────────────────────────────
+    milestones.append({
+        "year": FIRST_YEAR, "title": "The Beginning",
+        "event": "Trail & Bish Dynasty begins.",
+        "why": "Every player, every class, every rivalry number that follows starts here.",
+        "metric": f"{int((df['YEAR'] == FIRST_YEAR).sum())} players drafted in the inaugural class",
+        "owner": "Dynasty",
+    })
+
+    # ── First Franchise-Level Player ────────────────────────────────
+    fr = scored[scored["CAREER_TIER"].isin(FRANCHISE_TIERS)].sort_values(
+        ["YEAR", "OVERALL SCORE"], ascending=[True, False]
+    )
+    if not fr.empty:
+        top = fr.iloc[0]
+        milestones.append({
+            "year": int(top["YEAR"]), "title": "First Franchise-Level Player",
+            "event": f"{top['PLAYER']} ({top['OWNER']}) becomes the dynasty's first Franchise-tier player.",
+            "why": "The first sign either owner could hit at an elite level, not just find a starter.",
+            "metric": f"Score {fmt_score(top['OVERALL SCORE'])} · {top['CAREER_TIER']}",
+            "owner": str(top["OWNER"]),
+        })
+
+    # ── First Legend-Level Player ────────────────────────────────────
+    lg = scored[scored["CAREER_TIER"] == "Legend"].sort_values(
+        ["YEAR", "OVERALL SCORE"], ascending=[True, False]
+    )
+    if not lg.empty:
+        top = lg.iloc[0]
+        milestones.append({
+            "year": int(top["YEAR"]), "title": "First Legend-Level Player",
+            "event": f"{top['PLAYER']} ({top['OWNER']}) becomes the dynasty's first Legend.",
+            "why": "The ceiling of the entire scoring system, reached for the first time.",
+            "metric": f"Score {fmt_score(top['OVERALL SCORE'])}",
+            "owner": str(top["OWNER"]),
+        })
+
+    # ── First Championship-Impact Player ─────────────────────────────
+    if "SB Win" in df.columns:
+        sb = scored[scored["SB Win"].fillna(0) > 0].sort_values(
+            ["YEAR", "OVERALL SCORE"], ascending=[True, False]
+        )
+        if not sb.empty:
+            top = sb.iloc[0]
+            rings = int(top["SB Win"])
+            milestones.append({
+                "year": int(top["YEAR"]), "title": "First Championship-Impact Player",
+                "event": f"{top['PLAYER']} ({top['OWNER']}) becomes the dynasty's first Super Bowl champion.",
+                "why": "The moment the dynasty stopped being just about scores and started touching real championships.",
+                "metric": f"{rings} ring{'s' if rings != 1 else ''}",
+                "owner": str(top["OWNER"]),
+            })
+
+    # ── First Major Power Swing (cumulative leader flips, non-trivial sample) ──
+    prev_leader = None
+    for row in cum:
+        if prev_leader is not None and row["leader"] != prev_leader and row["leader"] != "Tie":
+            if row["matt_n"] >= MIN_RANKED_SAMPLE and row["ryan_n"] >= MIN_RANKED_SAMPLE:
+                milestones.append({
+                    "year": row["year"], "title": "First Major Power Shift",
+                    "event": f"{row['leader']} takes the all-time dynasty lead for the first time.",
+                    "why": "The balance of power changes hands for the first time with a real sample behind it.",
+                    "metric": f"+{row['gap']:.1f} avg score edge as of {row['year']}",
+                    "owner": row["leader"],
+                })
+                break
+        if row["matt_n"] >= MIN_RANKED_SAMPLE and row["ryan_n"] >= MIN_RANKED_SAMPLE:
+            prev_leader = row["leader"]
+
+    # ── Biggest Draft-Class Swing (single class, not cumulative) ────
+    if per_class:
+        biggest_class = max(per_class, key=lambda r: abs(r["matt_avg"] - r["ryan_avg"]))
+        gap = abs(biggest_class["matt_avg"] - biggest_class["ryan_avg"])
+        if gap > 0:
+            milestones.append({
+                "year": biggest_class["year"], "title": "Biggest Draft-Class Swing",
+                "event": f"{biggest_class['leader']} dominates the {biggest_class['year']} class outright.",
+                "why": "The single most lopsided class in dynasty history, judged on that class alone.",
+                "metric": f"+{gap:.1f} avg score gap in one class",
+                "owner": biggest_class["leader"],
+            })
+
+    # ── Largest Owner Lead (cumulative, sample-gated) ────────────────
+    # Same MIN_RANKED_SAMPLE gate as the power-swing check above -- an
+    # early year with 1-2 picks each can produce a huge but meaningless
+    # gap. Only years where both owners have a real sample are eligible.
+    eligible_cum = [
+        r for r in cum if r["matt_n"] >= MIN_RANKED_SAMPLE and r["ryan_n"] >= MIN_RANKED_SAMPLE
+    ]
+    if eligible_cum:
+        peak = max(eligible_cum, key=lambda r: r["gap"])
+        if peak["gap"] > 0:
+            milestones.append({
+                "year": peak["year"], "title": "Largest Owner Lead",
+                "event": f"{peak['leader']} opens the widest cumulative lead in dynasty history.",
+                "why": "The single furthest apart the two owners have ever been, dynasty-wide.",
+                "metric": f"+{peak['gap']:.1f} avg score, {peak['leader']} {peak['matt_avg' if peak['leader']=='Matt' else 'ryan_avg']:.1f}",
+                "owner": peak["leader"],
+            })
+
+        # ── Biggest Comeback (peak gap vs. most recent gap) ──────────
+        latest = cum[-1]
+        if peak["year"] != latest["year"]:
+            closed = peak["gap"] - latest["gap"]
+            if closed > 0:
+                trailing_owner = "Ryan" if peak["leader"] == "Matt" else "Matt"
+                milestones.append({
+                    "year": latest["year"], "title": "Biggest Comeback",
+                    "event": f"{trailing_owner} claws back {closed:.1f} points of the {peak['year']} deficit.",
+                    "why": (
+                        f"{trailing_owner} has taken the lead back"
+                        if latest["leader"] == trailing_owner
+                        else f"{trailing_owner} has cut into what was once a +{peak['gap']:.1f} deficit"
+                    ),
+                    "metric": f"Gap: +{peak['gap']:.1f} ({peak['year']}) → +{latest['gap']:.1f} (now)",
+                    "owner": trailing_owner,
+                })
+
+        # ── Current Dynasty State ─────────────────────────────────────
+        # Deliberately NOT sample-gated -- this reports reality as it
+        # stands today, not "the most extreme historical moment", so
+        # there's no small-sample risk to guard against here.
+        milestones.append({
+            "year": latest["year"], "title": "Current Dynasty State",
+            "event": f"{latest['leader']} leads the all-time dynasty average, as of the {latest['year']} class.",
+            "why": "Where things actually stand today.",
+            "metric": f"Matt {latest['matt_avg']:.1f} · Ryan {latest['ryan_avg']:.1f}",
+            "owner": latest["leader"],
+        })
+
+    milestones.sort(key=lambda m: m["year"])
+    return milestones
 
 
 # ---------------------------------------------------------------------------

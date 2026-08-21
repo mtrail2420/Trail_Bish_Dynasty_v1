@@ -733,6 +733,32 @@ def timeline_node(year: int, label: str, winner: str, is_milestone: bool = False
 </div>"""
 
 
+def milestone_card(milestone: dict) -> str:
+    """
+    Single row in the curated Dynasty Timeline (Legacy Center).
+
+    Distinct from timeline_node() above, which renders the exhaustive
+    per-year Draft Class Timeline strip. This renders one milestone dict
+    from core.stats.compute_dynasty_timeline(): {year, title, event, why,
+    metric, owner}.
+    """
+    owner_cls = {
+        "Matt": "tb-milestone-matt",
+        "Ryan": "tb-milestone-ryan",
+    }.get(milestone.get("owner"), "tb-milestone-dynasty")
+    return f"""
+<div class="tb-milestone-row {owner_cls}">
+  <div class="tb-milestone-dot"></div>
+  <div class="tb-milestone-head">
+    <span class="tb-milestone-year">{milestone['year']}</span>
+    <span class="tb-milestone-title">{_html.escape(str(milestone['title']))}</span>
+  </div>
+  <div class="tb-milestone-event">{_html.escape(str(milestone['event']))}</div>
+  <div class="tb-milestone-why">{_html.escape(str(milestone['why']))}</div>
+  <div class="tb-milestone-metric">{_html.escape(str(milestone['metric']))}</div>
+</div>"""
+
+
 def legacy_spotlight_card(
     name: str,
     owner: str,
