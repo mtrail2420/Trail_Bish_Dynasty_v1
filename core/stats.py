@@ -312,6 +312,151 @@ def compute_draft_dna(df: pd.DataFrame, owner: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Dynasty Power Index + "Why Is Ryan Winning?" — owner-level explanation
+# ---------------------------------------------------------------------------
+#
+# Built as ONE feature, per explicit direction: Power Index is never shown
+# without its explanation. This does NOT introduce a new source of truth --
+# every input below comes from compute_owner_stats() and compute_draft_dna(),
+# which are themselves built on canonical OVERALL SCORE / CAREER_TIER
+# fields. No individual player is re-scored; this is purely an owner-level
+# aggregate of numbers that already exist.
+
+POWER_INDEX_WEIGHTS: dict[str, float] = {
+    "avg_score":      0.5,
+    "franchise_rate": 0.3,
+    "hit_rate":       0.2,
+}
+"""Weights for compute_power_index(). Sum to exactly 1.0, enforced by the
+assert immediately below so this can never silently drift out of balance.
+Each weight applies to an input that is already 0-100-scaled (avg_score
+per the locked player-scoring formula; franchise_rate and hit_rate are
+already percentages), so the weighted sum is itself directly on a 0-100
+scale with no separate normalization step. Deliberately excludes bust
+rate as a fourth factor -- it's already implicit in avg_score (a bust
+drags the average down), so scoring it twice would double-count the
+same signal under two different names."""
+
+assert abs(sum(POWER_INDEX_WEIGHTS.values()) - 1.0) < 1e-9, (
+    "POWER_INDEX_WEIGHTS must sum to 1.0"
+)
+
+_POWER_INDEX_LABELS: dict[str, str] = {
+    "avg_score":      "Average Player Quality",
+    "franchise_rate": "Franchise-Tier Depth",
+    "hit_rate":       "Late-Round Hit Rate",
+}
+
+
+def compute_power_index(df: pd.DataFrame) -> dict:
+    """
+    Owner-level Dynasty Power Index: a single transparent 0-100 number per
+    owner answering "how strong is each dynasty right now", plus a full,
+    additive breakdown of exactly what's driving the gap between them.
+
+    Formula (weights in POWER_INDEX_WEIGHTS, sum to 1.0):
+        power_index = 0.5 * avg_score
+                    + 0.3 * franchise_conversion_rate
+                    + 0.2 * late_round_hit_rate
+    A direct weighted blend of three already-0-100 numbers -- no hidden
+    normalization, no magic number.
+
+    The gap between Ryan's and Matt's index is decomposed into each
+    component's exact contribution. Because the index is a linear
+    combination, those contributions are GUARANTEED to sum to the total
+    gap -- enforced by an assert here rather than just asserted in
+    prose, so "Why Is Ryan Winning" is arithmetic that visibly adds up,
+    not a vibe.
+
+    Parameters
+    ----------
+    df: Raw players DataFrame from ``load_players()``.
+
+    Returns
+    -------
+    dict with keys:
+      matt, ryan       -- each {avg_score, franchise_rate, hit_rate,
+                           power_index}
+      leader, gap       -- who's ahead and by how many Power Index points
+                           (gap is always >= 0; see `leader` for direction)
+      components        -- list of {label, matt_value, ryan_value, weight,
+                           contribution, leader}, one per weighted factor,
+                           sorted by |contribution| descending (biggest
+                           driver of the gap first)
+      sharpest_position  -- supplementary context, NOT part of the
+                           weighted math: the single position group with
+                           the largest score gap between the owners
+                           (both sides must meet MIN_RANKED_SAMPLE), or
+                           None if nothing qualifies.
+    """
+    matt_stats = compute_owner_stats(df, "Matt")
+    ryan_stats = compute_owner_stats(df, "Ryan")
+    matt_dna   = compute_draft_dna(df, "Matt")
+    ryan_dna   = compute_draft_dna(df, "Ryan")
+
+    def _owner_inputs(stats: dict, dna: dict) -> dict:
+        avg_score      = stats["avg_score"]
+        franchise_rate = dna["franchise_conversion_rate"]
+        hit_rate       = dna["late_round_hit_rate"]
+        power_index = (
+            POWER_INDEX_WEIGHTS["avg_score"] * avg_score
+            + POWER_INDEX_WEIGHTS["franchise_rate"] * franchise_rate
+            + POWER_INDEX_WEIGHTS["hit_rate"] * hit_rate
+        )
+        return {
+            "avg_score": avg_score, "franchise_rate": franchise_rate,
+            "hit_rate": hit_rate, "power_index": power_index,
+        }
+
+    matt = _owner_inputs(matt_stats, matt_dna)
+    ryan = _owner_inputs(ryan_stats, ryan_dna)
+
+    raw_gap = ryan["power_index"] - matt["power_index"]  # positive = Ryan ahead
+    leader  = "Ryan" if raw_gap > 0 else "Matt" if raw_gap < 0 else "Tie"
+
+    components = []
+    for key, weight in POWER_INDEX_WEIGHTS.items():
+        m_val, r_val = matt[key], ryan[key]
+        contribution = weight * (r_val - m_val)  # positive = favors Ryan
+        components.append({
+            "label": _POWER_INDEX_LABELS[key],
+            "matt_value": m_val, "ryan_value": r_val, "weight": weight,
+            "contribution": contribution,
+            "leader": "Ryan" if contribution > 0 else "Matt" if contribution < 0 else "Tie",
+        })
+    components.sort(key=lambda c: abs(c["contribution"]), reverse=True)
+
+    # The whole point of this feature: verify the breakdown actually
+    # explains the number, don't just assert it in a docstring.
+    assert abs(sum(c["contribution"] for c in components) - raw_gap) < 1e-6, (
+        "Power Index component contributions do not sum to the total gap"
+    )
+
+    # ── Sharpest positional edge (supplementary color, not scored) ────
+    sharpest_position = None
+    shared_positions = set(matt_dna["position"]) & set(ryan_dna["position"])
+    eligible = [
+        (pos, ryan_dna["position"][pos]["avg"] - matt_dna["position"][pos]["avg"])
+        for pos in shared_positions
+        if matt_dna["position"][pos]["n"] >= MIN_RANKED_SAMPLE
+        and ryan_dna["position"][pos]["n"] >= MIN_RANKED_SAMPLE
+    ]
+    if eligible:
+        pos, diff = max(eligible, key=lambda x: abs(x[1]))
+        sharpest_position = {
+            "position": pos, "diff": diff,
+            "leader": "Ryan" if diff > 0 else "Matt" if diff < 0 else "Tie",
+            "matt_avg": matt_dna["position"][pos]["avg"],
+            "ryan_avg": ryan_dna["position"][pos]["avg"],
+        }
+
+    return {
+        "matt": matt, "ryan": ryan, "leader": leader, "gap": abs(raw_gap),
+        "components": components, "sharpest_position": sharpest_position,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Comparison helpers
 # ---------------------------------------------------------------------------
 

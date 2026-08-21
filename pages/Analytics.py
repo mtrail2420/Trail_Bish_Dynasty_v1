@@ -11,6 +11,7 @@ from core.stats import (
     compute_owner_stats,
     compute_ms_summary,
     compute_draft_dna,
+    compute_power_index,
     POSITION_GROUPS,
 )
 from core.components import page_header
@@ -51,6 +52,8 @@ text-transform:uppercase;flex-shrink:0;}
 .an-dna-val{font-size:14px;font-weight:900;text-align:right;}
 .an-dna-val.matt{color:#2E7DF7;}.an-dna-val.ryan{color:#E63B3B;}
 .an-dna-sub{font-size:9px;color:var(--text-label);text-align:right;flex-basis:100%;margin-top:-2px;}
+.an-kpi-hero-val.an-val-matt{color:#2E7DF7;}
+.an-kpi-hero-val.an-val-ryan{color:#E63B3B;}
 .an-val-teal{color:var(--an-teal);}.an-val-gold{color:var(--gold);}
 .an-val-matt{color:#2E7DF7;}.an-val-ryan{color:#E63B3B;}.an-val-neutral{color:var(--text-label);}
 .an-snap-hero{font-size:52px;font-weight:900;color:var(--an-teal);line-height:1;margin-bottom:2px;}
@@ -781,3 +784,63 @@ with _dna_col1:
     st.markdown(_dna_card(dna_matt, "Matt"), unsafe_allow_html=True)
 with _dna_col2:
     st.markdown(_dna_card(dna_ryan, "Ryan"), unsafe_allow_html=True)
+
+# =============================================================================
+# ROW 8 — Dynasty Power Index + "Why Is [Owner] Winning?"
+# =============================================================================
+# Built as one feature, per explicit direction: the index is never shown
+# without its explanation. Shared engine: core.stats.compute_power_index(),
+# itself built on compute_owner_stats() + compute_draft_dna() -- no new
+# source of truth, no individual player re-scored.
+
+power = compute_power_index(df)
+_pi_leader_cls = "matt" if power["leader"] == "Matt" else "ryan"
+
+_pi_col1, _pi_col2 = st.columns([1, 1.3])
+
+with _pi_col1:
+    st.markdown(f"""
+<div class="an-panel">
+<div class="an-label">DYNASTY POWER INDEX</div>
+<div class="an-kpi-hero">
+<div class="an-kpi-hero-val an-val-{_pi_leader_cls}">+{power['gap']:.1f}</div>
+<div class="an-kpi-hero-label">{power['leader'].upper()} LEADS</div>
+</div>
+<div class="an-kpi-minis">
+<div class="an-kpi-mini">
+<div class="an-kpi-mini-val an-val-matt">{power['matt']['power_index']:.1f}</div>
+<div class="an-kpi-mini-label">Matt</div>
+</div>
+<div class="an-kpi-mini">
+<div class="an-kpi-mini-val an-val-ryan">{power['ryan']['power_index']:.1f}</div>
+<div class="an-kpi-mini-label">Ryan</div>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+with _pi_col2:
+    _why_rows = ""
+    for c in power["components"]:
+        c_cls = "matt" if c["leader"] == "Matt" else "ryan" if c["leader"] == "Ryan" else "neutral"
+        sign  = "+" if c["contribution"] >= 0 else "−"
+        _why_rows += _dna_stat_row(
+            c["label"], f'{sign}{abs(c["contribution"]):.2f} {c["leader"]}', c_cls,
+            f'Matt {c["matt_value"]:.1f} &middot; Ryan {c["ryan_value"]:.1f} &middot; weight {c["weight"]:.0%}',
+        )
+
+    _sp = power["sharpest_position"]
+    _sp_html = ""
+    if _sp:
+        _sp_cls = "matt" if _sp["leader"] == "Matt" else "ryan"
+        _why_rows += _dna_stat_row(
+            "Sharpest Positional Edge", f'{_sp["position"]} &middot; {_sp["leader"]}', _sp_cls,
+            f'Matt {_sp["matt_avg"]:.1f} &middot; Ryan {_sp["ryan_avg"]:.1f} avg &middot; not part of the index above',
+        )
+
+    st.markdown(
+        f'<div class="an-panel">'
+        f'<div class="an-label">WHY {power["leader"].upper()} LEADS</div>'
+        f'{_why_rows}'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
