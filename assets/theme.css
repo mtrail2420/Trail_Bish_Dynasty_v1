@@ -2344,3 +2344,97 @@ a.tb-exhibit-anchor:hover{text-decoration:none}
 /* Scoped hot-color overrides — owner chips inside Tale of the Tape */
 .tb-ms-tot-wrap .tb-chip-matt{ background:rgba(var(--ms-blue-rgb),.15);border-color:rgba(var(--ms-blue-rgb),.35);color:var(--ms-blue); }
 .tb-ms-tot-wrap .tb-chip-ryan{ background:rgba(var(--ms-red-rgb),.15);border-color:rgba(var(--ms-red-rgb),.35);color:var(--ms-red); }
+
+/* ============================================================
+   MOBILE RESPONSIVE PASS — 2026-08-20
+   Everything below this line only fires on narrow viewports.
+   Desktop layout above is completely untouched — nothing here
+   overrides desktop behavior, only adds mobile-width rules.
+   ============================================================ */
+
+@media (max-width: 768px){
+
+    /* --- Hero / display numbers: scale down so they fit narrow screens --- */
+    .tb-title{ font-size:32px; }
+    .tb-card-value{ font-size:28px; }
+    .tb-elite-score{ font-size:34px; }
+    .tb-detail-score{ font-size:40px; }
+    .tb-lc-hero-title{ font-size:26px; }
+    .tb-lc-hero-trophy{ font-size:56px; }
+    .tb-ms-title{ font-size:32px; }
+    .tb-ms-corner-name{ font-size:22px;letter-spacing:2px; }
+    .tb-ms-tally-num{ font-size:42px; }
+    .tb-ms-tally-sep{ font-size:24px; }
+
+    /* --- Dense data tables: scroll horizontally instead of crushing columns --- */
+    .tb-full-roster{
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+    }
+    .tb-full-roster .tb-roster-header,
+    .tb-full-roster .tb-roster-row{
+        min-width:820px; /* preserves desktop column layout — swipe to see the rest */
+    }
+
+    .tb-class-dive-table{
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+    }
+    .tb-class-dive-header,
+    .tb-class-dive-row{
+        min-width:640px;
+    }
+
+    /* --- Stat/exhibit grids: 4-across becomes 2-across --- */
+    .tb-exhibit-grid,
+    .tb-award-grid,
+    .tb-rushmore-grid,
+    .tb-ms-scorecard{
+        grid-template-columns:repeat(2,1fr) !important;
+    }
+
+    /* --- 3-across becomes 2-across --- */
+    .tb-hof-grid{
+        grid-template-columns:repeat(2,1fr) !important;
+    }
+
+    /* --- Side-by-side comparison blocks: full stack --- */
+    .tb-war-room-grid,
+    .tb-record-grid{
+        grid-template-columns:1fr !important;
+    }
+
+    .tb-comparison-row{
+        grid-template-columns:1fr !important;
+        text-align:center;
+        gap:6px;
+    }
+
+    /* --- Man Status bout card: shrink fixed columns instead of stacking,
+       keeps the head-to-head "vs" feel intact on a phone --- */
+    .tb-ms-bout-card{
+        grid-template-columns:36px 1fr 18px 1fr 72px !important;
+        gap:4px !important;
+        font-size:11px;
+    }
+}
+
+@media (max-width: 480px){
+
+    /* --- Small phones: the 2-across grids from the 768px tier drop to 1-across --- */
+    .tb-exhibit-grid,
+    .tb-award-grid,
+    .tb-rushmore-grid,
+    .tb-ms-scorecard,
+    .tb-hof-grid,
+    .tb-lc-glance-grid,
+    .tb-lc-pulse-grid,
+    .tb-award-grid-2col{
+        grid-template-columns:1fr !important;
+    }
+
+    /* --- Further trim hero numbers on the smallest screens --- */
+    .tb-title{ font-size:26px; }
+    .tb-ms-title{ font-size:26px; }
+    .tb-ms-tally-num{ font-size:34px; }
+}
