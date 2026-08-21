@@ -38,7 +38,14 @@ footer                          { visibility: hidden; }
 /* The mobile/collapsed-sidebar reopen control lives inside <header> and was
    disappearing along with the rest of the desktop chrome hidden above — with
    no way to get the nav sidebar back once it auto-collapses on a narrow
-   screen. Re-show just that one control. Fixes: no menu bar on mobile. */
+   screen. Re-show just that one control. Fixes: no menu bar on mobile.
+   NOTE: the first attempt at this used the old testid "collapsedControl",
+   which turned out to be stale — Streamlit renamed it to
+   "stExpandSidebarButton" at some point. Confirmed by grepping the actual
+   shipped frontend bundle rather than guessing a second time. Both
+   selectors are kept here in case Streamlit Cloud is serving a version
+   with either name. */
+[data-testid="stExpandSidebarButton"],
 [data-testid="collapsedControl"] {
     visibility: visible !important;
     display: flex !important;
