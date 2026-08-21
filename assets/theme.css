@@ -2417,6 +2417,37 @@ a.tb-exhibit-anchor:hover{text-decoration:none}
         gap:4px !important;
         font-size:11px;
     }
+
+    /* --- Rivalry Banner (Dashboard hero box): stack Matt / VS / Ryan
+       vertically instead of squeezing 3 flex columns into a narrow screen.
+       Fixes: "top box still wide" — this was missed in the original pass,
+       only grids and hero fonts were covered, not this specific component. --- */
+    .tb-rivalry-banner{
+        flex-direction:column;
+    }
+    .tb-rb-matt{
+        border-right:none;
+        border-bottom:1px solid var(--border);
+    }
+    .tb-rb-side{
+        padding:18px 16px;
+    }
+    .tb-rb-owner-name{
+        font-size:20px;
+        margin-bottom:12px;
+    }
+    .tb-rb-stats{
+        gap:16px;
+        flex-wrap:wrap;
+        justify-content:center;
+    }
+    .tb-rb-center{
+        padding:14px 16px;
+        min-width:0;
+    }
+    .tb-mini-stat-value{
+        font-size:20px;
+    }
 }
 
 @media (max-width: 480px){

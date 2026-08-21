@@ -34,6 +34,15 @@ header                          { visibility: hidden; }
 footer                          { visibility: hidden; }
 [data-testid="stSidebarNav"]    { display: none; }
 .block-container                { padding-top:1rem; padding-bottom:2rem; max-width:1600px; }
+
+/* The mobile/collapsed-sidebar reopen control lives inside <header> and was
+   disappearing along with the rest of the desktop chrome hidden above — with
+   no way to get the nav sidebar back once it auto-collapses on a narrow
+   screen. Re-show just that one control. Fixes: no menu bar on mobile. */
+[data-testid="collapsedControl"] {
+    visibility: visible !important;
+    display: flex !important;
+}
 </style>
 """
 
