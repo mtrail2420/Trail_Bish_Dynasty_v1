@@ -10,6 +10,7 @@ from core.stats import (
     compute_league_stats,
     compute_owner_stats,
     compute_ms_summary,
+    compute_draft_dna,
     POSITION_GROUPS,
 )
 from core.components import page_header
@@ -42,6 +43,14 @@ padding:22px 24px;box-shadow:var(--an-shadow-card);box-sizing:border-box;}
 .an-label{font-size:9px;font-weight:800;letter-spacing:2.5px;color:var(--an-teal);
 text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:18px;
 display:flex;justify-content:center;text-align:center!important;}
+.an-dna-row{display:flex;justify-content:space-between;align-items:baseline;
+padding:9px 0;border-bottom:1px solid var(--border);gap:10px;}
+.an-dna-row:last-child{border-bottom:none;padding-bottom:0;}
+.an-dna-lbl{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-label);
+text-transform:uppercase;flex-shrink:0;}
+.an-dna-val{font-size:14px;font-weight:900;text-align:right;}
+.an-dna-val.matt{color:#2E7DF7;}.an-dna-val.ryan{color:#E63B3B;}
+.an-dna-sub{font-size:9px;color:var(--text-label);text-align:right;flex-basis:100%;margin-top:-2px;}
 .an-val-teal{color:var(--an-teal);}.an-val-gold{color:var(--gold);}
 .an-val-matt{color:#2E7DF7;}.an-val-ryan{color:#E63B3B;}.an-val-neutral{color:var(--text-label);}
 .an-snap-hero{font-size:52px;font-weight:900;color:var(--an-teal);line-height:1;margin-bottom:2px;}
@@ -701,3 +710,74 @@ st.markdown(
     f'</div>',
     unsafe_allow_html=True,
 )
+
+# =============================================================================
+# ROW 7 — Dynasty DNA  (Drafting Identity, Matt vs Ryan)
+# =============================================================================
+# Shared engine: core.stats.compute_draft_dna(). Built once, consumed here;
+# any future feature needing this same round/position/era breakdown should
+# call that function rather than recomputing it on its own page.
+
+dna_matt = compute_draft_dna(df, "Matt")
+dna_ryan = compute_draft_dna(df, "Ryan")
+
+
+def _dna_stat_row(label: str, value: str, cls: str, sub: str = "") -> str:
+    sub_html = f'<div class="an-dna-sub">{sub}</div>' if sub else ""
+    return (
+        f'<div class="an-dna-row">'
+        f'<div class="an-dna-lbl">{label}</div>'
+        f'<div class="an-dna-val {cls}">{value}</div>'
+        f'{sub_html}'
+        f'</div>'
+    )
+
+
+def _dna_card(dna: dict, owner: str) -> str:
+    cls = "matt" if owner == "Matt" else "ryan"
+    bp, wp = dna["best_position"], dna["worst_position"]
+    br, wr = dna["best_round"], dna["worst_round"]
+    be     = dna["best_era"]
+
+    rows  = _dna_stat_row(
+        "Strongest Position", bp["name"] if bp else "—", cls,
+        f'{bp["avg"]:.1f} avg &middot; n={bp["n"]}' if bp else "",
+    )
+    rows += _dna_stat_row(
+        "Weakest Position", wp["name"] if wp else "—", cls,
+        f'{wp["avg"]:.1f} avg &middot; n={wp["n"]}' if wp else "",
+    )
+    rows += _dna_stat_row(
+        "Best Round", br["name"] if br else "—", cls,
+        f'{br["avg"]:.1f} avg &middot; n={br["n"]}' if br else "",
+    )
+    rows += _dna_stat_row(
+        "Toughest Round", wr["name"] if wr else "—", cls,
+        f'{wr["avg"]:.1f} avg &middot; n={wr["n"]}' if wr else "",
+    )
+    rows += _dna_stat_row(
+        "Best Era", be["name"] if be else "—", cls,
+        f'{be["avg"]:.1f} avg &middot; n={be["n"]}' if be else "",
+    )
+    rows += _dna_stat_row(
+        "Late-Round Hit Rate", f'{dna["late_round_hit_rate"]:.0f}%', cls,
+        "Round 4+ / UDFA picks reaching Starter tier or better",
+    )
+    rows += _dna_stat_row(
+        "Franchise Conversion", f'{dna["franchise_conversion_rate"]:.0f}%', cls,
+        f'of {dna["total"]} total selections',
+    )
+
+    return (
+        f'<div class="an-panel">'
+        f'<div class="an-label">{owner.upper()} &middot; DRAFTING IDENTITY</div>'
+        f'{rows}'
+        f'</div>'
+    )
+
+
+_dna_col1, _dna_col2 = st.columns(2)
+with _dna_col1:
+    st.markdown(_dna_card(dna_matt, "Matt"), unsafe_allow_html=True)
+with _dna_col2:
+    st.markdown(_dna_card(dna_ryan, "Ryan"), unsafe_allow_html=True)

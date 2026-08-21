@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from core.utils import is_score_pending, UDFA_ROUND
+from core.utils import is_score_pending, UDFA_ROUND, format_round
 
 
 # ---------------------------------------------------------------------------
@@ -157,6 +157,157 @@ def compute_owner_stats(df: pd.DataFrame, owner: str) -> dict:
         "franchise":  int(odf["CAREER_TIER"].isin(FRANCHISE_TIERS).sum()),
         "busts":      int((odf["CAREER_TIER"] == "Bust").sum()),
         "high_score": int(scored["OVERALL SCORE"].max()) if len(scored) else 0,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Dynasty DNA / Draft Efficiency — shared drafting-identity engine
+# ---------------------------------------------------------------------------
+#
+# Built as ONE feature, not two separate ones (see the roadmap discussion
+# in project chat, and docs/DECISIONS.md if this gets a D-number). Dynasty
+# DNA and Draft Efficiency were originally proposed as separate ideas, but
+# they compute the same underlying thing: round/position/era performance,
+# grouped by owner. Any future feature needing that breakdown (Power Index,
+# "Why Is Ryan Winning", Era Analysis, Position Dynasty Analysis) should
+# call compute_draft_dna() rather than recomputing its own version — that's
+# the whole point of building it once here instead of four times across
+# four pages.
+
+DRAFT_ERAS: list[tuple[str, int, int]] = [
+    ("2007–2011", 2007, 2011),
+    ("2012–2016", 2012, 2016),
+    ("2017–2021", 2017, 2021),
+    ("2022–2026", 2022, 2026),
+]
+"""Four 5-year eras spanning the dynasty's full draft history so far.
+Revisit during the annual update once 2027 data exists -- either extend
+the last era or add a fifth, whichever reads best once there's enough
+data in it to be meaningful. Deliberately not auto-computed from
+CURRENT_YEAR: era boundaries are a judgment call, not a formula."""
+
+# Tiers counted as a "hit" for late-round-hit-rate purposes: Starter or
+# better. Contributor and Bust are not hits -- they made the roster, but
+# a late-round "hit" story needs the player actually panning out.
+_HIT_TIERS: frozenset[str] = frozenset(
+    {"Legend", "Franchise", "High-End Starter", "Starter"}
+)
+
+
+def compute_draft_dna(df: pd.DataFrame, owner: str) -> dict:
+    """
+    Compute one owner's "drafting identity": strongest/weakest position,
+    best/worst round, best/worst era, late-round hit rate, franchise
+    conversion rate, and bust rate.
+
+    This is the shared analytical engine for Dynasty DNA / Draft
+    Efficiency. Buckets with fewer than MIN_RANKED_SAMPLE scored players
+    are excluded from best/worst selection (but still appear in the raw
+    breakdown dicts) so a single lucky or unlucky pick can't crown an
+    entire round or era.
+
+    Parameters
+    ----------
+    df:    Raw players DataFrame from ``load_players()``.
+    owner: "Matt" or "Ryan".
+
+    Returns
+    -------
+    dict with keys:
+      total, position, round, era  (raw breakdowns: label -> {avg, n})
+      best_position, worst_position, best_round, worst_round,
+      best_era, worst_era          (each {name, avg, n}, or None)
+      late_round_hit_rate          (0-100, % of Round 4+/UDFA picks
+                                     that reached Starter tier or better)
+      first_round_avg, late_round_avg
+      franchise_conversion_rate, bust_rate   (0-100)
+    """
+    odf    = df[df["OWNER"] == owner]
+    scored = odf.dropna(subset=["OVERALL SCORE"])
+    total  = int(len(odf))
+
+    def _bucket_stats(sub_df: pd.DataFrame) -> dict:
+        return {
+            "avg": float(sub_df["OVERALL SCORE"].mean()) if len(sub_df) else 0.0,
+            "n":   int(len(sub_df)),
+        }
+
+    def _best_worst(buckets: dict[str, dict]) -> tuple[dict | None, dict | None]:
+        eligible = {k: v for k, v in buckets.items() if v["n"] >= MIN_RANKED_SAMPLE}
+        if not eligible:
+            return None, None
+        best_k  = max(eligible, key=lambda k: eligible[k]["avg"])
+        worst_k = min(eligible, key=lambda k: eligible[k]["avg"])
+        return (
+            {"name": best_k,  **eligible[best_k]},
+            {"name": worst_k, **eligible[worst_k]},
+        )
+
+    # ── Position breakdown ──────────────────────────────────────────
+    position: dict[str, dict] = {
+        grp: _bucket_stats(scored[scored["POSITION"].isin(positions)])
+        for grp, positions in POSITION_GROUPS.items()
+    }
+    best_position, worst_position = _best_worst(position)
+
+    # ── Round breakdown (1-7, UDFA) ──────────────────────────────────
+    round_: dict[str, dict] = {}
+    for r in list(range(1, 8)) + [UDFA_ROUND]:
+        r_sc = scored[scored["ROUND"] == r]
+        if len(r_sc) == 0 and r != UDFA_ROUND:
+            continue  # skip real rounds with zero picks; always compute UDFA
+        round_[format_round(r)] = _bucket_stats(r_sc)
+
+    # Best round may legitimately be UDFA -- an undrafted player who
+    # becomes a stud is exactly the story this stat should tell. Worst
+    # round deliberately excludes UDFA: undrafted players averaging lower
+    # than drafted ones is the expected baseline, not a drafting weakness,
+    # so it would show up as "Worst Round: UDFA" almost every time
+    # regardless of how well an owner actually drafts -- noise, not signal.
+    best_round, _ = _best_worst(round_)
+    _, worst_round = _best_worst({k: v for k, v in round_.items() if k != "UDFA"})
+
+    # ── Era breakdown ────────────────────────────────────────────────
+    era: dict[str, dict] = {
+        label: _bucket_stats(scored[(scored["YEAR"] >= start) & (scored["YEAR"] <= end)])
+        for label, start, end in DRAFT_ERAS
+    }
+    best_era, worst_era = _best_worst(era)
+
+    # ── Late-round hit rate: Round 4+ (incl. UDFA) reaching Starter+ ──
+    late_scored = scored[scored["ROUND"] >= 4]
+    late_hits   = int(late_scored["CAREER_TIER"].isin(_HIT_TIERS).sum())
+    late_round_hit_rate = (late_hits / len(late_scored) * 100) if len(late_scored) else 0.0
+
+    # ── First-round vs late-round average, for risk-profile framing ──
+    first_scored    = scored[scored["ROUND"] <= 2]
+    first_round_avg = float(first_scored["OVERALL SCORE"].mean()) if len(first_scored) else 0.0
+    late_round_avg  = float(late_scored["OVERALL SCORE"].mean()) if len(late_scored) else 0.0
+
+    franchise_conversion_rate = (
+        float(odf["CAREER_TIER"].isin(FRANCHISE_TIERS).sum()) / total * 100
+    ) if total else 0.0
+    bust_rate = (
+        float((odf["CAREER_TIER"] == "Bust").sum()) / total * 100
+    ) if total else 0.0
+
+    return {
+        "owner": owner,
+        "total": total,
+        "position": position,
+        "round": round_,
+        "era": era,
+        "best_position": best_position,
+        "worst_position": worst_position,
+        "best_round": best_round,
+        "worst_round": worst_round,
+        "best_era": best_era,
+        "worst_era": worst_era,
+        "late_round_hit_rate": late_round_hit_rate,
+        "first_round_avg": first_round_avg,
+        "late_round_avg": late_round_avg,
+        "franchise_conversion_rate": franchise_conversion_rate,
+        "bust_rate": bust_rate,
     }
 
 
