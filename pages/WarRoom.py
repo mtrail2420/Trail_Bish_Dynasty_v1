@@ -10,7 +10,7 @@ from core.stats import (
     compute_class_stats,
     compute_series_record,
 )
-from core.utils import safe_int, safe_str, is_score_pending
+from core.utils import safe_int, safe_str, is_score_pending, CURRENT_YEAR
 from core.components import (
     page_header,
     section_header,
@@ -209,7 +209,7 @@ st.markdown(
 
 years_all    = sorted(df["YEAR"].unique().astype(int), reverse=True)
 default_year = next(
-    (y for y in years_all if y not in (2025, 2026)),
+    (y for y in years_all if y not in (CURRENT_YEAR - 1, CURRENT_YEAR)),
     years_all[0],
 )
 

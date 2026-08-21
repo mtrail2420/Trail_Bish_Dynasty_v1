@@ -20,6 +20,8 @@ from pathlib import Path
 
 import streamlit as st
 
+from core.utils import YEAR_RANGE
+
 from core.data_loader import load_players, get_data_status, workbook_exists, bust_stale_cache
 
 
@@ -77,10 +79,10 @@ def render_sidebar(active: str = "") -> None:
 
         # Branding
         st.markdown(
-            """
+            f"""
             <div class="tb-sidebar-logo">
                 <div class="tb-sidebar-title">🏈 Trail &amp; Bish</div>
-                <div class="tb-sidebar-subtitle">Boys Dynasty · 2007–2026</div>
+                <div class="tb-sidebar-subtitle">Boys Dynasty · {YEAR_RANGE}</div>
             </div>
             """,
             unsafe_allow_html=True,

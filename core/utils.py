@@ -11,6 +11,16 @@ from __future__ import annotations
 
 import math
 
+# ── League year constants (centralized D-XXX) ──────────────────────────────
+# The single source of truth for "what year is it" across the app. Bump
+# CURRENT_YEAR (and nothing else) during the annual update — every page
+# that shows the current/pending draft class reads from here instead of
+# a hardcoded literal, so next year's refresh is a one-line change.
+FIRST_YEAR: int = 2007
+CURRENT_YEAR: int = 2026
+YEAR_RANGE: str = f"{FIRST_YEAR}–{CURRENT_YEAR}"
+CURRENT_CLASS: int = CURRENT_YEAR  # the pending/not-yet-scored draft class
+
 
 def safe_int(val, default: int = 0) -> int:
     """Convert *val* to int, returning *default* for NaN / None / non-numeric."""

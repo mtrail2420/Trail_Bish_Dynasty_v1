@@ -5,7 +5,7 @@ import streamlit as st
 from core.data_loader import load_man_status, workbook_exists
 from core.sidebar import render_sidebar
 from core.stats import compute_ms_summary, ms_winner_state
-from core.utils import safe_int
+from core.utils import safe_int, FIRST_YEAR, CURRENT_YEAR
 from core.components import (
     owner_chip,
     position_chip,
@@ -233,7 +233,7 @@ st.markdown(fight_card_html, unsafe_allow_html=True)
 # =============================================================================
 
 st.markdown(
-    '<div class="tb-ms-divider"><span>🥊 MOMENTUM STRIP · 2007 → 2026</span></div>',
+    f'<div class="tb-ms-divider"><span>🥊 MOMENTUM STRIP · {FIRST_YEAR} → {CURRENT_YEAR}</span></div>',
     unsafe_allow_html=True,
 )
 

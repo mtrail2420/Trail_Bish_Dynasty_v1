@@ -3,7 +3,7 @@ import streamlit as st
 from core.data_loader import load_players, workbook_exists
 from core.sidebar import render_sidebar
 from core.stats import compute_league_stats, compute_owner_stats, POSITION_GROUPS as _POS_GROUPS
-from core.utils import safe_int, safe_str, is_score_pending, fmt_score
+from core.utils import safe_int, safe_str, is_score_pending, fmt_score, YEAR_RANGE
 from core.components import (
     page_header,
     section_header,
@@ -549,7 +549,7 @@ with _fc_tab1:
             f'  </div>'
             f'  <div class="fc-footer">'
             f'    <span class="fc-footer-brand">Trail &amp; Bish Boys Dynasty</span>'
-            f'    <span class="fc-footer-brand">2007–2026</span>'
+            f'    <span class="fc-footer-brand">{YEAR_RANGE}</span>'
             f'  </div>'
             f'</div>',
             unsafe_allow_html=True,
@@ -623,7 +623,7 @@ with _fc_tab2:
             f'  <div class="fc-vs-body">{_vs_rows_html}</div>'
             f'  <div class="fc-footer">'
             f'    <span class="fc-footer-brand">Trail &amp; Bish Boys Dynasty</span>'
-            f'    <span class="fc-footer-brand">2007–2026</span>'
+            f'    <span class="fc-footer-brand">{YEAR_RANGE}</span>'
             f'  </div>'
             f'</div>',
             unsafe_allow_html=True,

@@ -3,7 +3,7 @@ pages/WildcardBoys.py — Wildcard Boys
 Displays speculative late picks graded by Cooked Meter (0=pristine, 100=cooked).
 WC Score = 100 − Cooked Meter, computed live.
 Too Early picks are shown but excluded from scoreboard averages.
-Pending (blank OUTCOME) picks = 2026 class, not drafted yet.
+Pending (blank OUTCOME) picks = CURRENT_YEAR class, not drafted yet.
 
 Identity: Late-Night Gambling Den.  Every swing on the table.
 """
@@ -12,6 +12,8 @@ import html as _html
 
 import pandas as pd
 import streamlit as st
+
+from core.utils import CURRENT_YEAR
 
 from core.data_loader import load_wildcard, workbook_exists
 from core.sidebar import render_sidebar
@@ -181,13 +183,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Explainer ─────────────────────────────────────────────────────────────────
-st.markdown("""
+st.markdown(f"""
 <div class="wc-explainer">
   <strong>Judgment call, not a formula.</strong>
   Wildcard outcomes are graded by feel — these are speculative late picks,
   not the main draft. Scoring is kept intentionally separate from the dynasty
   formula. <strong>"Too Early"</strong> picks aren't counted in the averages
-  until they have a real outcome. <strong>Pending</strong> rows (2026 class)
+  until they have a real outcome. <strong>Pending</strong> rows ({CURRENT_YEAR} class)
   haven't been drafted yet.
 </div>
 """, unsafe_allow_html=True)

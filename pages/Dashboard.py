@@ -3,7 +3,7 @@ import streamlit as st
 from core.data_loader import load_players, workbook_exists
 from core.sidebar import render_sidebar
 from core.stats import compute_league_stats, compute_owner_stats, score_leader, compute_class_stats, POSITION_GROUPS
-from core.utils import fmt_score
+from core.utils import fmt_score, CURRENT_YEAR
 from core.components import (
     page_header,
     section_header,
@@ -128,7 +128,7 @@ st.page_link("pages/Rankings.py", label="View full rankings →", icon="📊")
 # ── Best Value Picks ──────────────────────────────────────────────────────────
 
 st.markdown(
-    section_header("BEST VALUE PICKS", "Round 3+ players who outperformed their draft slot"),
+    section_header("BEST LATE-ROUND PICKS", "Highest-scoring players selected Round 3+"),
     unsafe_allow_html=True,
 )
 
@@ -270,11 +270,11 @@ color:#94a3b8;border:1px solid rgba(148,163,184,.2);}
 </style>""", unsafe_allow_html=True)
 
 st.markdown(
-    section_header("WHAT'S COMING", "2026 draft class · season in progress"),
+    section_header("WHAT'S COMING", f"{CURRENT_YEAR} draft class · season in progress"),
     unsafe_allow_html=True,
 )
 
-_class26 = df[df["YEAR"] == 2026]
+_class26 = df[df["YEAR"] == CURRENT_YEAR]
 if len(_class26) > 0:
     _c26_total   = len(_class26)
     _c26_scored  = int(_class26["OVERALL SCORE"].notna().sum())
@@ -286,7 +286,7 @@ if len(_class26) > 0:
     _coming_html = (
         '<div class="db-coming-wrap">'
         '<div class="db-coming-header">'
-        '<div class="db-coming-title">2026 Draft Class</div>'
+        f'<div class="db-coming-title">{CURRENT_YEAR} Draft Class</div>'
         '<span class="db-coming-badge">Season Active</span>'
         f'<span class="db-coming-meta">{_c26_total} picks · {_c26_tbd} pending</span>'
         '</div>'
@@ -326,6 +326,6 @@ if len(_class26) > 0:
     st.markdown(_coming_html, unsafe_allow_html=True)
 else:
     st.markdown(
-        '<div style="color:#4a6080;font-size:12px;padding:12px;">2026 class data not yet available.</div>',
+        f'<div style="color:#4a6080;font-size:12px;padding:12px;">{CURRENT_YEAR} class data not yet available.</div>',
         unsafe_allow_html=True,
     )

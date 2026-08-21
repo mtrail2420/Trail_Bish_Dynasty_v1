@@ -22,6 +22,7 @@ from __future__ import annotations
 import html as _html
 import math as _math
 
+from core.stats import FRANCHISE_TIERS
 from core.utils import is_score_pending, safe_int, fmt_score
 
 
@@ -216,7 +217,7 @@ def rivalry_banner(matt_df, ryan_df) -> str:
             <div class="tb-rb-stats">
                 {mini_stat("Players",   str(len(df)))}
                 {mini_stat("Avg Score", f"{df['OVERALL SCORE'].mean():.1f}")}
-                {mini_stat("Franchise", str(int((df['CAREER_TIER'] == 'Franchise').sum())))}
+                {mini_stat("Elite", str(int(df['CAREER_TIER'].isin(FRANCHISE_TIERS).sum())))}
                 {mini_stat("Busts",     str(int((df['CAREER_TIER'] == 'Bust').sum())))}
             </div>
         </div>

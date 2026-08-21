@@ -16,7 +16,9 @@ What it checks
    was edited without applying the matching delta. These are bugs.
 
 2. NOTE / SB WIN CONSISTENCY
-   Any player note containing "champion" or "Super Bowl" should have SB Win ≥ 1.
+   Any player note that actually CLAIMS A WIN (champion / ring / "won ... Super
+   Bowl") should have SB Win ≥ 1. Merely appearing in / participating in /
+   starting a Super Bowl is NOT a win claim and is intentionally not flagged.
    Any player with SB Win ≥ 1 should have a note mentioning their ring.
    Flags both directions.
 
@@ -35,6 +37,7 @@ Award weights (LOCKED — matches scoring formula in CLAUDE.md):
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -61,7 +64,15 @@ AWARD_CAP   = 16.0
 MULTIPLIER  = 0.6
 
 # ── Ring note phrases ──────────────────────────────────────────────────────
-_RING_WORDS = ("champion", "super bowl", "sb ", "ring")
+# Word-boundary patterns only — plain substring checks previously matched
+# "ring" inside "during" and would have matched "champion" inside
+# "championship" too. Merely appearing in a Super Bowl ("Super Bowl
+# appearance/starter/participant") is deliberately NOT a win claim.
+_WIN_PATTERNS = (
+    re.compile(r"\bchampion\b"),          # "Super Bowl champion", not "...ship"
+    re.compile(r"\brings?\b"),            # "Super Bowl ring(s)"
+    re.compile(r"\bwon\b.*\bsuper bowl"), # "won two Super Bowls..."
+)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
@@ -88,7 +99,7 @@ def _implied_baseline(score: float, award_pts: float) -> float:
 
 def _note_claims_ring(note: str) -> bool:
     low = note.lower()
-    return any(w in low for w in _RING_WORDS)
+    return any(p.search(low) for p in _WIN_PATTERNS)
 
 
 # ── Main ───────────────────────────────────────────────────────────────────
