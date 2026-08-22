@@ -2,7 +2,7 @@ import streamlit as st
 
 from core.data_loader import load_players, workbook_exists
 from core.sidebar import render_sidebar
-from core.stats import compute_league_stats, compute_owner_stats, POSITION_GROUPS as _POS_GROUPS
+from core.stats import compute_league_stats, compute_owner_stats, compute_dynasty_awards, POSITION_GROUPS as _POS_GROUPS
 from core.utils import safe_int, safe_str, is_score_pending, fmt_score, YEAR_RANGE, format_round, UDFA_ROUND
 from core.components import (
     page_header,
@@ -64,7 +64,12 @@ SORT_MAP: dict[str, tuple[str, bool]] = {
 
 best_qb     = df[df["POSITION"] == "QB"].dropna(subset=["OVERALL SCORE"]).sort_values("OVERALL SCORE", ascending=False).iloc[0]
 best_wr     = df[df["POSITION"] == "WR"].dropna(subset=["OVERALL SCORE"]).sort_values("OVERALL SCORE", ascending=False).iloc[0]
-best_late   = df[df["ROUND"] >= 4].dropna(subset=["OVERALL SCORE"]).sort_values("OVERALL SCORE", ascending=False).iloc[0]
+# Consolidation (whole-product redundancy audit): this used to be its own
+# independent df[df["ROUND"]>=4]... calculation -- the exact same "biggest
+# late-round steal" definition Rankings' Dynasty Awards already computes via
+# compute_dynasty_awards(), just recomputed a second time via a separate
+# code path. Now sourced from the one shared function instead.
+best_late   = compute_dynasty_awards(df)["steal"]
 most_awards = df.sort_values("_award_total", ascending=False).iloc[0]
 
 # ── Top 10 for elite cards ─────────────────────────────────────────────────────
@@ -149,12 +154,12 @@ with i1:
     )
 
 with i2:
-    late_color = "blue" if best_late["OWNER"] == "Matt" else "red"
+    late_color = "blue" if best_late["owner"] == "Matt" else "red"
     st.markdown(
         callout(
             "BIGGEST LATE-ROUND STEAL",
-            str(best_late["PLAYER"]),
-            f"{best_late['OWNER']} · {format_round(best_late['ROUND'])} · Score {fmt_score(best_late['OVERALL SCORE'])}",
+            str(best_late["name"]),
+            f"{best_late['owner']} · {format_round(best_late['round'])} · Score {fmt_score(best_late['value'])}",
             late_color,
         ),
         unsafe_allow_html=True,

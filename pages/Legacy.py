@@ -342,6 +342,7 @@ for _, p in scored_all.head(20).iterrows():
     )
 goat_html += "</div>"
 st.markdown(goat_html, unsafe_allow_html=True)
+st.page_link("pages/Rankings.py", label="View the full Overall Leaderboard →", icon="📊")
 
 # ── 4B · Mount Rushmore ───────────────────────────────────────────────────
 st.markdown('<div id="mount-rushmore"></div>', unsafe_allow_html=True)
@@ -430,6 +431,7 @@ for gc in greatest_cls:
     )
 gc_room_html += "</div>"
 st.markdown(gc_room_html, unsafe_allow_html=True)
+st.page_link("pages/WarRoom.py", label="See all 20 classes graded →", icon="⚔️")
 
 # ── 4E · Hall of Shame ────────────────────────────────────────────────────
 busts = (
