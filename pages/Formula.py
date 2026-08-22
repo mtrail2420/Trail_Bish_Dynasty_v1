@@ -193,6 +193,12 @@ with col_formula:
       </div>
     </div>
     <div class="fr-cap-note">Points cap at 16 before the multiplier — stacking awards never creates runaway scores.</div>
+    <div class="fr-cap-note" style="margin-top:8px;color:#8090aa;">
+      <strong style="color:#c0cce0;">All-Pro</strong> means First-Team AP All-Pro only —
+      never second-team, never a Pro Bowl selection.<br>
+      <strong style="color:#c0cce0;">SB Win</strong> credits anyone on the champion's roster
+      at Super Bowl time — active, inactive, IR, or a practice-squad elevation all count.
+    </div>
     """, unsafe_allow_html=True)
 
 with col_tiers:
@@ -237,6 +243,20 @@ with col_tiers:
         2025–26 class players show <strong style="color:#6070a0;">TBD</strong> because
         the season hasn't ended and awards haven't been finalized yet — not because they
         failed to score.
+      </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="margin-top:10px;padding:10px 14px;border-radius:7px;
+    background:rgba(10,14,25,.5);border:1px solid rgba(255,255,255,.06);">
+      <span style="font-size:9px;font-weight:800;letter-spacing:1.5px;
+      text-transform:uppercase;color:#4a6080;">ℹ️ &nbsp;"Franchise Players" elsewhere in the app</span>
+      <p style="font-size:11px;color:#4a6080;margin:6px 0 0;line-height:1.65;">
+        Dashboard and Legacy use <strong style="color:#6070a0;">"Franchise Players"</strong> as
+        shorthand for Legend + Franchise combined (score ≥ 80). On this page, the
+        <strong style="color:#6070a0;">Franchise</strong> row above means that single tier —
+        80–94.9 — not the combined count.
       </p>
     </div>
     """, unsafe_allow_html=True)
@@ -448,3 +468,24 @@ except Exception as _audit_e:
         f'<div style="color:#4a6080;font-size:12px;padding:12px;">Audit unavailable: {_audit_e}</div>',
         unsafe_allow_html=True,
     )
+
+# ── Data & Sources ────────────────────────────────────────────────────────────
+# Closing note per the whole-page review: everything above explains the rule,
+# proves it with a real example, and validates it statistically. This last
+# piece explains the architecture the whole thing sits on -- why correcting
+# one player's record propagates everywhere automatically, and why nothing
+# on this page (or any analytics page) can silently drift out of sync with
+# the workbook.
+st.markdown('<hr class="fr-section-rule">', unsafe_allow_html=True)
+st.markdown('<div class="fr-lbl">Data &amp; sources</div>', unsafe_allow_html=True)
+st.markdown("""
+<div class="fr-plain" style="text-align:left;max-width:720px;margin:0 auto;">
+  Every score, tier, and derived stat in this app traces back to one file —
+  <code>AP_Dynasty_Backend.xlsx</code> — the single canonical source of truth.
+  Analytics, DNA, Power Index, Timeline, and every chart elsewhere in the app
+  are all <strong style="color:#c0cce0;">calculated live from that workbook
+  every time a page loads</strong>. Nothing gets written back to it, and
+  nothing is cached stale — correct one player's record and every page that
+  depends on it is correct on the next load, automatically.
+</div>
+""", unsafe_allow_html=True)
