@@ -5,7 +5,6 @@ from core.sidebar import render_sidebar
 from core.stats import (
     compute_league_stats,
     compute_owner_stats,
-    score_leader,
     rank_players,
     compute_class_stats,
     class_grade,
@@ -63,7 +62,6 @@ df = load_players()
 ls           = compute_league_stats(df)
 matt_s       = compute_owner_stats(df, "Matt")
 ryan_s       = compute_owner_stats(df, "Ryan")
-leader, _    = score_leader(matt_s, ryan_s)
 ranked       = rank_players(df)
 scored_all   = ranked[ranked["RANK"] > 0].reset_index(drop=True)
 
@@ -78,8 +76,6 @@ cs            = compute_class_stats(df)
 # Derived scalars
 matt_sb   = int(df[df["OWNER"] == "Matt"]["SB Win"].fillna(0).sum())
 ryan_sb   = int(df[df["OWNER"] == "Ryan"]["SB Win"].fillna(0).sum())
-matt_avg  = matt_s["avg_score"]
-ryan_avg  = ryan_s["avg_score"]
 top1      = scored_all.iloc[0]
 
 # Timeline winner + label per year
@@ -303,6 +299,7 @@ with lc3:
         f"SB Rings: {safe_int(sp['SB Win'])}" if safe_int(sp.get("SB Win", 0)) > 0 else None,
     ]
     sp_facts = [f for f in sp_facts if f]
+    is_hof = bool(sp.get("HOF", False))
     st.markdown(
         legacy_spotlight_card(
             name      = str(sp["PLAYER"]),
@@ -314,6 +311,7 @@ with lc3:
             tier      = str(sp["CAREER_TIER"]),
             facts     = sp_facts[:4],
             awards_html = sp_awards_html,
+            is_hof    = is_hof,
         ),
         unsafe_allow_html=True,
     )
