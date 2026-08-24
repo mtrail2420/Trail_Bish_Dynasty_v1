@@ -11,7 +11,6 @@ from core.components import (
     callout,
     owner_chip,
     award_badges,
-    elite_player_card,
     player_detail_card,
     roster_table_header,
     player_roster_row,
@@ -71,15 +70,6 @@ best_wr     = df[df["POSITION"] == "WR"].dropna(subset=["OVERALL SCORE"]).sort_v
 # code path. Now sourced from the one shared function instead.
 best_late   = compute_dynasty_awards(df)["steal"]
 most_awards = df.sort_values("_award_total", ascending=False).iloc[0]
-
-# ── Top 10 for elite cards ─────────────────────────────────────────────────────
-
-top10 = (
-    df.dropna(subset=["OVERALL SCORE"])
-    .sort_values("OVERALL SCORE", ascending=False)
-    .head(10)
-    .reset_index(drop=True)
-)
 
 # =============================================================================
 # PAGE RENDER
@@ -224,6 +214,7 @@ spotlight_name = st.selectbox(
 
 if spotlight_name:
     sp = df[df["PLAYER"] == spotlight_name].iloc[0]
+    is_hof = bool(sp.get("HOF", False))
     st.markdown(
         player_detail_card(
             name         = str(sp["PLAYER"]),
@@ -238,6 +229,7 @@ if spotlight_name:
             production   = safe_str(sp.get("PRODUCTION", "")),
             longevity    = safe_str(sp.get("LONGEVITY", "")),
             champ_impact = safe_str(sp.get("CHAMPIONSHIP_IMPACT", "")),
+            is_hof       = is_hof,
         ),
         unsafe_allow_html=True,
     )
@@ -255,7 +247,6 @@ border-radius:10px;overflow:hidden;margin-bottom:8px;}
 .pl-cmp-owner.matt{color:#2E7DF7;}
 .pl-cmp-owner.ryan{color:#E63B3B;}
 .pl-cmp-name{font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;line-height:1.15;}
-.pl-cmp-meta{font-size:11px;color:#4a6080;margin-bottom:16px;}
 .pl-cmp-score-block{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
 .pl-cmp-score{font-size:42px;font-weight:900;color:#fff;line-height:1;}
 .pl-cmp-score.winner{color:#D4AF37;}
@@ -326,7 +317,6 @@ def _render_cmp_side(row, is_winner: bool) -> str:
         f'<div class="pl-cmp-stat-row"><span class="pl-cmp-stat-lbl">Tier</span><span class="pl-cmp-stat-val" style="color:{tier_col};">{tier}</span></div>'
     )
     prod  = safe_str(row.get("PRODUCTION", ""))
-    notes = safe_str(row.get("NOTES", ""))
     if prod:
         stats_html += f'<div class="pl-cmp-stat-row"><span class="pl-cmp-stat-lbl">Production</span><span class="pl-cmp-stat-val" style="font-weight:600;font-size:10px;max-width:180px;text-align:right;">{prod[:60]}{"…" if len(prod)>60 else ""}</span></div>'
     return (
@@ -447,6 +437,7 @@ if n == 0:
 else:
     rows_html = ""
     for rank, (_, p) in enumerate(filtered.iterrows(), start=1):
+        is_hof = bool(p.get("HOF", False))
         rows_html += player_roster_row(
             rank        = rank,
             name        = str(p["PLAYER"]),
@@ -457,6 +448,7 @@ else:
             score       = float(p["OVERALL SCORE"]) if not is_score_pending(p["OVERALL SCORE"]) else float("nan"),
             tier        = str(p["CAREER_TIER"]),
             awards_html = award_badges(p.to_dict()),
+            is_hof      = is_hof,
         )
 
     st.markdown(
@@ -470,7 +462,6 @@ else:
 st.markdown(section_header("FLEX CARD", "Screenshot-ready · send mid-argument"), unsafe_allow_html=True)
 
 st.markdown("""<style>
-.fc-wrap{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;}
 .fc-card{width:320px;background:#070B13;border:1px solid rgba(255,255,255,.12);
 border-radius:14px;overflow:hidden;flex-shrink:0;}
 .fc-card-header{padding:14px 18px 10px;border-bottom:1px solid rgba(255,255,255,.07);}
@@ -493,8 +484,6 @@ text-transform:uppercase;padding:4px 11px;border-radius:5px;margin-bottom:12px;}
 .fc-stat-val{font-size:14px;font-weight:800;color:#c0cce0;}
 .fc-stat-lbl{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4a6080;margin-top:2px;}
 .fc-awards-row{display:flex;flex-wrap:wrap;gap:5px;}
-.fc-award-chip{font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;
-background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);color:#D4AF37;}
 .fc-footer{background:rgba(0,0,0,.3);padding:8px 18px;display:flex;
 justify-content:space-between;align-items:center;}
 .fc-footer-brand{font-size:8px;font-weight:800;letter-spacing:2px;
@@ -585,13 +574,6 @@ with _fc_tab2:
         _fb = df[df["PLAYER"] == _fc_h2h_b].iloc[0]
         _sa2 = float(_fa["OVERALL SCORE"]) if not is_score_pending(_fa["OVERALL SCORE"]) else 0.0
         _sb2 = float(_fb["OVERALL SCORE"]) if not is_score_pending(_fb["OVERALL SCORE"]) else 0.0
-
-        def _vs_val(row, col):
-            import pandas as pd
-            v = row.get(col, None)
-            if v is None or (hasattr(v, '__class__') and str(v) == "nan"): return "—"
-            try: return str(int(float(str(v)))) if float(str(v)) == int(float(str(v))) else f"{float(str(v)):.1f}"
-            except: return str(v)
 
         _vs_rows = [
             ("Overall Score",
