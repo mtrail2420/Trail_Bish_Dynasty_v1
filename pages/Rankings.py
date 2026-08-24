@@ -5,7 +5,6 @@ from core.sidebar import render_sidebar
 from core.stats import (
     compute_league_stats,
     compute_owner_stats,
-    score_leader,
     rank_players,
     rank_players_by_position,
     POSITION_GROUPS,
@@ -47,9 +46,6 @@ if not workbook_exists():
 
 df          = load_players()
 ls          = compute_league_stats(df)
-matt_stats  = compute_owner_stats(df, "Matt")
-ryan_stats  = compute_owner_stats(df, "Ryan")
-leader, _delta = score_leader(matt_stats, ryan_stats)
 
 ranked      = rank_players(df)
 scored      = ranked[ranked["RANK"] > 0].reset_index(drop=True)
@@ -111,6 +107,7 @@ for _, p in top25.iterrows():
     if not _is_featured and not _field_break_inserted:
         rows_html += '<div class="rk-field-break">THE FIELD</div>'
         _field_break_inserted = True
+    is_hof = bool(p.get("HOF", False))
     rows_html += player_row(
         rank     = _rank,
         name     = str(p["PLAYER"]),
@@ -120,6 +117,7 @@ for _, p in top25.iterrows():
         score    = _score,
         tier     = str(p["CAREER_TIER"]),
         featured = _is_featured,
+        is_hof   = is_hof,
     )
 
 st.markdown(player_table(rows_html), unsafe_allow_html=True)
