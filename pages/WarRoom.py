@@ -5,8 +5,6 @@ from core.data_loader import load_players, workbook_exists
 from core.sidebar import render_sidebar
 from core.stats import (
     compute_league_stats,
-    compute_owner_stats,
-    score_leader,
     compute_class_stats,
     compute_series_record,
     class_retrospective,
@@ -75,9 +73,6 @@ df = load_players()
 _AWARD_COLS = ["MVP", "OPOY", "DPOY", "OROY", "DROY", "ALL_PRO", "SB Win", "SB_MVP"]
 
 ls          = compute_league_stats(df)
-matt_stats  = compute_owner_stats(df, "Matt")
-ryan_stats  = compute_owner_stats(df, "Ryan")
-leader, _delta = score_leader(matt_stats, ryan_stats)
 
 class_df  = compute_class_stats(df)
 record    = compute_series_record(class_df)
@@ -108,27 +103,6 @@ def _series_leader(rec: dict) -> tuple[str, str]:
     return "Tied", f"{rec['matt_wins']}–{rec['ryan_wins']}–{rec['ties']}"
 
 series_leader, series_record_str = _series_leader(record)
-
-# Bust winner: fewer busts is better
-bust_winner = (
-    "Matt" if matt_stats["busts"] < ryan_stats["busts"]
-    else "Ryan" if ryan_stats["busts"] < matt_stats["busts"]
-    else ""
-)
-
-franchise_winner = (
-    "Matt" if matt_stats["franchise"] > ryan_stats["franchise"]
-    else "Ryan" if ryan_stats["franchise"] > matt_stats["franchise"]
-    else ""
-)
-
-score_winner = leader  # already computed
-
-high_score_winner = (
-    "Matt" if matt_stats["high_score"] > ryan_stats["high_score"]
-    else "Ryan" if ryan_stats["high_score"] > matt_stats["high_score"]
-    else ""
-)
 
 # =============================================================================
 # PAGE RENDER
@@ -284,6 +258,7 @@ st.markdown(
 rows_html = ""
 for rank, (_, p) in enumerate(year_df.iterrows(), start=1):
     score = float(p["OVERALL SCORE"]) if not is_score_pending(p["OVERALL SCORE"]) else float("nan")
+    is_hof = bool(p.get("HOF", False))
     rows_html += class_dive_row(
         rank        = rank,
         name        = str(p["PLAYER"]),
@@ -293,6 +268,7 @@ for rank, (_, p) in enumerate(year_df.iterrows(), start=1):
         score       = score,
         tier        = str(p["CAREER_TIER"]),
         awards_html = award_badges(p.to_dict()),
+        is_hof      = is_hof,
     )
 
 st.markdown(f"{rows_html}</div>", unsafe_allow_html=True)
