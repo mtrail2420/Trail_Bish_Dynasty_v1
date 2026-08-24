@@ -253,6 +253,7 @@ def player_row(
     score: float,
     tier: str,
     featured: bool = False,
+    is_hof: bool = False,
 ) -> str:
     """Compact ranked player row with inline score bar.  Used for GOAT Race etc."""
     pending  = is_score_pending(score)
@@ -281,7 +282,7 @@ def player_row(
         </div>
         {bar_html}
         <div class="tb-pr-score-num">{score_display}</div>
-        <div class="tb-pr-tier">{tier_badge(tier)}</div>
+        <div class="tb-pr-tier">{tier_badge(tier)}{hof_badge() if is_hof else ''}</div>
     </div>
     """)
 
@@ -306,42 +307,6 @@ def callout(label: str, value: str, detail: str, color: str = "blue") -> str:
     """)
 
 
-# ---------------------------------------------------------------------------
-# Elite player cards — Players page signature feature
-# ---------------------------------------------------------------------------
-
-def elite_player_card(
-    rank: int,
-    name: str,
-    owner: str,
-    position: str,
-    year: int,
-    round_: int,
-    score: float,
-    tier: str,
-    awards_html: str,
-) -> str:
-    """Premium card for top-10 players.  ESPN / Ultimate Team aesthetic."""
-    owner_cls  = "tb-elite-matt" if owner == "Matt" else "tb-elite-ryan"
-    rd         = f"Rd {round_}" if round_ else ""
-    pending    = is_score_pending(score)
-    score_disp = score_pending_badge() if pending else _fmt_score(score)
-
-    return _compact(f"""
-    <div class="tb-elite-card {owner_cls}">
-        <div class="tb-elite-rank">#{rank}</div>
-        <div class="tb-elite-score">{score_disp}</div>
-        <div class="tb-elite-name">{_html.escape(str(name))}</div>
-        <div class="tb-elite-meta">
-            {position_chip(position)}
-            {owner_chip(owner)}
-        </div>
-        <div class="tb-elite-draft">{year} · {rd}</div>
-        <div class="tb-elite-tier-wrap">{tier_badge(tier)}</div>
-        <div class="tb-elite-awards">{awards_html}</div>
-    </div>
-    """)
-
 
 # ---------------------------------------------------------------------------
 # Player detail card — Players page spotlight
@@ -360,6 +325,7 @@ def player_detail_card(
     production: str = "",
     longevity: str = "",
     champ_impact: str = "",
+    is_hof: bool = False,
 ) -> str:
     """Full-width player profile card shown in the Player Spotlight section."""
     owner_cls  = "tb-detail-matt" if owner == "Matt" else "tb-detail-ryan"
@@ -393,7 +359,7 @@ def player_detail_card(
                 <div class="tb-detail-meta">
                     {owner_chip(owner)}&nbsp;
                     {position_chip(position)}&nbsp;
-                    {tier_badge(tier)}
+                    {tier_badge(tier)}{hof_badge() if is_hof else ''}
                 </div>
                 <div class="tb-detail-awards-row">{awards_html}</div>
             </div>
@@ -435,6 +401,7 @@ def class_dive_row(
     score: float,
     tier: str,
     awards_html: str,
+    is_hof: bool = False,
 ) -> str:
     """
     Compact player row for the War Room Class Deep Dive table.
@@ -462,7 +429,7 @@ def class_dive_row(
         <div>{position_chip(position)}</div>
         <div style="color:#5A7494;font-size:12px;font-weight:600;">{rd_str}</div>
         <div class="tb-cd-score {score_cls}">{score_disp}</div>
-        <div>{tier_badge(tier)}</div>
+        <div>{tier_badge(tier)}{hof_badge() if is_hof else ''}</div>
         <div>{awards_html}</div>
     </div>
     """)
@@ -478,6 +445,7 @@ def player_roster_row(
     score: float,
     tier: str,
     awards_html: str,
+    is_hof: bool = False,
 ) -> str:
     """
     Full-width roster table row.
@@ -509,7 +477,7 @@ def player_roster_row(
         <div class="tb-rc-year">{year}</div>
         <div class="tb-rc-round">{rd_str}</div>
         <div class="tb-rc-score"><div class="tb-rc-score-inner">{score_inner}</div></div>
-        <div class="tb-rc-tier">{tier_badge(tier)}</div>
+        <div class="tb-rc-tier">{tier_badge(tier)}{hof_badge() if is_hof else ''}</div>
         <div class="tb-rc-awards">{awards_html}</div>
     </div>
     """)
@@ -769,6 +737,7 @@ def legacy_spotlight_card(
     tier: str,
     facts: list,
     awards_html: str,
+    is_hof: bool = False,
 ) -> str:
     """Ceremonial featured-player card for the Legacy Spotlight section."""
     pending    = is_score_pending(score)
@@ -789,7 +758,7 @@ def legacy_spotlight_card(
   <div class="tb-spotlight-score-row">
     <span class="tb-spotlight-score-label">Score</span>
     <span class="tb-spotlight-score-val">{score_disp}</span>
-    &nbsp;{tier_badge(tier)}
+    &nbsp;{tier_badge(tier)}{hof_badge() if is_hof else ''}
   </div>
   <div class="tb-spotlight-draft">{year} · {rd_str}</div>
   {facts_html}
