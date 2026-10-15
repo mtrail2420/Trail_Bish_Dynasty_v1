@@ -29,6 +29,11 @@ What it checks
    Counts players with no OVERALL SCORE (the newest draft class).
    Reports the count and year so it's easy to confirm the right class is pending.
 
+5. MAN STATUS NAME COVERAGE
+   Every MATT_PICK / RYAN_PICK in the 'man status' sheet must match a PLAYER
+   name exactly. The app syncs bout scores from the live player scores by name;
+   a typo'd name silently falls back to the sheet's stale value.
+
 Award weights (LOCKED — matches scoring formula in CLAUDE.md):
     MVP=6, SB_MVP=4, OPOY=3, DPOY=3, ALL_PRO=2.5, SB Win=2.5, OROY=1, DROY=1
     Award cap = 16 pts before the 0.6× multiplier.
@@ -243,6 +248,22 @@ def main() -> None:
     # ── 4. Pending count ───────────────────────────────────────────────────
     pending = [p for p in players if p.get("OVERALL SCORE") is None]
     pending_years = sorted({int(p["YEAR"]) for p in pending if p.get("YEAR") is not None})
+
+    # ── 5. Man status name coverage ─────────────────────────────────────────
+    if "man status" in wb.sheetnames:
+        ms = wb["man status"]
+        ms_headers = [c.value for c in ms[4]]
+        player_names = {str(p["PLAYER"]).strip() for p in players}
+        for rn in range(5, ms.max_row + 1):
+            for col_name in ("MATT_PICK", "RYAN_PICK"):
+                if col_name not in ms_headers:
+                    continue
+                nm = ms.cell(rn, ms_headers.index(col_name) + 1).value
+                if nm and str(nm).strip() and str(nm).strip() not in player_names:
+                    issues.append(
+                        f"MAN STATUS NAME MISMATCH  row {rn} {col_name}='{nm}' "
+                        f"— no matching PLAYER; bout score falls back to stale sheet value"
+                    )
 
     # ── Report ─────────────────────────────────────────────────────────────
     print(f"Players     : {total} total  |  {len(scored)} scored  |  {len(pending)} pending")

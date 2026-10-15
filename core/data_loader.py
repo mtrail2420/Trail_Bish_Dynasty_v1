@@ -174,6 +174,46 @@ def _load_man_status_raw() -> pd.DataFrame:
     return df.reset_index(drop=True)
 
 
+def _sync_man_status_scores(ms_df: pd.DataFrame, players_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Man Status bout scores always reflect the live v1 OVERALL SCORE from the
+    players sheet (which itself auto-recalculates from the award columns).
+
+    Awards are updated once a year after the season concludes; this join keeps
+    bout scores, margins, and winners in sync automatically — no hand edits
+    to the 'man status' sheet needed when awards change. A bout pick with no
+    matching player row (e.g. TBD for a pending bout) keeps its sheet value.
+
+    Pure function: DataFrames in → DataFrame out. No Streamlit imports.
+    """
+    live = (
+        players_df.dropna(subset=["OVERALL SCORE"])
+        .assign(_nm=players_df["PLAYER"].astype(str))
+        .set_index("_nm")["OVERALL SCORE"]
+        .astype(float)
+    )
+    out = ms_df.copy()
+    for pick_col, score_col in (("MATT_PICK", "MATT_SCORE"),
+                               ("RYAN_PICK", "RYAN_SCORE")):
+        if pick_col not in out.columns or score_col not in out.columns:
+            continue
+        mapped = out[pick_col].astype(str).map(live)
+        out[score_col] = mapped.combine_first(
+            pd.to_numeric(out[score_col], errors="coerce")
+        )
+    if {"MATT_SCORE", "RYAN_SCORE"}.issubset(out.columns):
+        m = pd.to_numeric(out["MATT_SCORE"], errors="coerce")
+        r = pd.to_numeric(out["RYAN_SCORE"], errors="coerce")
+        both = m.notna() & r.notna()
+        out.loc[both, "MARGIN"] = (m[both] - r[both]).abs()
+        winner = pd.Series(index=out.index, dtype=object)
+        winner[m > r] = "Matt"
+        winner[m < r] = "Ryan"
+        winner[m == r] = "Tie"
+        out.loc[both, "WINNER"] = winner[both]
+    return out
+
+
 @st.cache_data(show_spinner=False)
 def _load_wildcard_raw() -> pd.DataFrame:
     workbook = load_workbook()
@@ -235,7 +275,10 @@ def load_man_status() -> pd.DataFrame:
     Shows a plain-English error and stops the page on any data problem.
     """
     try:
-        return _load_man_status_raw()
+        ms = _load_man_status_raw()
+        # Bout scores track the live player scores so yearly award updates
+        # flow through to Man Status automatically.
+        return _sync_man_status_scores(ms, _load_players_raw())
     except Exception as exc:
         st.error(_fmt_load_error("man status", exc))
         st.stop()
