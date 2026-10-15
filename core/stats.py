@@ -1432,12 +1432,17 @@ def compute_baseline_audit(df: pd.DataFrame) -> dict:
 #
 # Locked v1 formula (SCORING_MODEL_v1 sheet, LOCKED 2026-06-29):
 #   OVERALL SCORE = baseline + 0.6 * min(16, raw_award_pts), ceiling 100
-# The per-player baseline (hand-calibrated production score) is not stored
-# separately, so it is derived as baseline = OVERALL_stored -
-# 0.6 * min(16, raw_current). When award inputs are unchanged this is an
-# exact identity; when an award cell is edited in the workbook, the score
-# follows automatically — no hand-editing of OVERALL SCORE required.
-# Weights/cap/discount are LOCKED. Only award inputs change, ever.
+#
+# Baselines are the hand-calibrated production scores FROZEN at v1 lock
+# (score_baseline_snapshot.json). They never change. Only award inputs
+# change, so editing an award cell in the workbook flows through to the
+# score automatically on the next load — no hand-editing of OVERALL SCORE.
+# Weights/cap/discount are LOCKED.
+#
+# NOTE: an earlier version of this function derived the baseline from the
+# stored OVERALL SCORE each load (baseline = stored - 0.6*awards), which is
+# a mathematical identity — a no-op. The frozen snapshot is what makes the
+# recalc real.
 
 _V1_AWARD_WEIGHTS: dict[str, float] = {
     "MVP":     6.0,
@@ -1454,11 +1459,20 @@ _V1_DISCOUNT  = 0.6
 _V1_CEILING   = 100.0
 
 
-def recompute_overall_score(df: pd.DataFrame) -> pd.DataFrame:
+def recompute_overall_score(df: pd.DataFrame, baselines: dict | None = None) -> pd.DataFrame:
     """
-    Recompute OVERALL SCORE from the award input columns, per the locked
-    v1 formula. Called in the player-loading path so every page gets
-    recalculated scores from one place.
+    Recompute OVERALL SCORE from the frozen v1 baselines and the CURRENT
+    award input columns. Called in the player-loading path so every page
+    gets recalculated scores from one place.
+
+    Parameters
+    ----------
+    df:
+        Players DataFrame (must include PLAYER and OVERALL SCORE).
+    baselines:
+        Frozen per-player baseline dict (from score_baseline_snapshot.json).
+        A scored player missing from baselines falls back to deriving the
+        baseline from the stored score (identity — safe no-op).
 
     NaN award cells count as 0. Players with no stored OVERALL SCORE
     (pending/unscored, e.g. the newest class) are left untouched.
@@ -1468,6 +1482,7 @@ def recompute_overall_score(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     if "OVERALL SCORE" not in out.columns:
         return out
+    baselines = baselines or {}
 
     raw = pd.Series(0.0, index=out.index)
     for col, weight in _V1_AWARD_WEIGHTS.items():
@@ -1477,8 +1492,14 @@ def recompute_overall_score(df: pd.DataFrame) -> pd.DataFrame:
 
     stored = out["OVERALL SCORE"]
     scored = stored.notna()
-    baseline = stored[scored].astype(float) - _V1_DISCOUNT * capped[scored]
+    s = stored[scored].astype(float)
+    names = out.loc[scored, "PLAYER"].astype(str)
+    base = pd.Series(
+        [baselines.get(nm, s.loc[idx] - _V1_DISCOUNT * capped.loc[idx])
+         for idx, nm in zip(s.index, names)],
+        index=s.index,
+    )
     out.loc[scored, "OVERALL SCORE"] = (
-        baseline + _V1_DISCOUNT * capped[scored]
+        base + _V1_DISCOUNT * capped[scored]
     ).clip(upper=_V1_CEILING)
     return out

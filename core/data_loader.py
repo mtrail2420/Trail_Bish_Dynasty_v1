@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import pandas as pd
 import streamlit as st
 
@@ -14,6 +15,16 @@ BACKEND_FILE = (
     / "backend"
     / "AP_Dynasty_Backend.xlsx"
 )
+
+BASELINES_FILE = PROJECT_ROOT / "score_baseline_snapshot.json"
+
+
+def _load_baselines() -> dict:
+    """Frozen v1 per-player baselines (hand-calibrated at v1 lock)."""
+    try:
+        return json.loads(BASELINES_FILE.read_text()).get("baselines", {})
+    except (FileNotFoundError, OSError, ValueError):
+        return {}
 
 
 # ── Cache-busting ──────────────────────────────────────────────────────────────
@@ -132,7 +143,7 @@ def _load_players_raw() -> pd.DataFrame:
     # Recompute OVERALL SCORE from the award input columns (locked v1
     # formula). Award edits in the workbook flow through automatically;
     # the stored column is the baseline source, not hand-edited truth.
-    df = recompute_overall_score(df)
+    df = recompute_overall_score(df, _load_baselines())
 
     # Derive CAREER_TIER from score — never trust the workbook column.
     df["CAREER_TIER"] = df["OVERALL SCORE"].apply(
