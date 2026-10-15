@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from core.stats import score_to_tier
+from core.stats import score_to_tier, recompute_overall_score
 
 
 # ── Project Paths ──────────────────────────────────────────────────────────────
@@ -128,6 +128,11 @@ def _load_players_raw() -> pd.DataFrame:
             f"Missing required columns in 'players': {', '.join(missing)}. "
             f"Required: {', '.join(_PLAYERS_REQUIRED)}"
         )
+
+    # Recompute OVERALL SCORE from the award input columns (locked v1
+    # formula). Award edits in the workbook flow through automatically;
+    # the stored column is the baseline source, not hand-edited truth.
+    df = recompute_overall_score(df)
 
     # Derive CAREER_TIER from score — never trust the workbook column.
     df["CAREER_TIER"] = df["OVERALL SCORE"].apply(

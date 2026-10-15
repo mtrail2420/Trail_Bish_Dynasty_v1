@@ -1424,3 +1424,61 @@ def compute_baseline_audit(df: pd.DataFrame) -> dict:
         "penalized_below_tier": _outlier_rows(sub.nsmallest(6, "residual")),
         "credited_above_tier": _outlier_rows(sub.nlargest(6, "residual")),
     }
+
+
+# ---------------------------------------------------------------------------
+# v1 scoring — auto-recalc of OVERALL SCORE from award inputs
+# ---------------------------------------------------------------------------
+#
+# Locked v1 formula (SCORING_MODEL_v1 sheet, LOCKED 2026-06-29):
+#   OVERALL SCORE = baseline + 0.6 * min(16, raw_award_pts), ceiling 100
+# The per-player baseline (hand-calibrated production score) is not stored
+# separately, so it is derived as baseline = OVERALL_stored -
+# 0.6 * min(16, raw_current). When award inputs are unchanged this is an
+# exact identity; when an award cell is edited in the workbook, the score
+# follows automatically — no hand-editing of OVERALL SCORE required.
+# Weights/cap/discount are LOCKED. Only award inputs change, ever.
+
+_V1_AWARD_WEIGHTS: dict[str, float] = {
+    "MVP":     6.0,
+    "SB_MVP":  4.0,
+    "OPOY":    3.0,
+    "DPOY":    3.0,
+    "ALL_PRO": 2.5,
+    "SB Win":  2.5,
+    "OROY":    1.0,
+    "DROY":    1.0,
+}
+_V1_AWARD_CAP = 16.0
+_V1_DISCOUNT  = 0.6
+_V1_CEILING   = 100.0
+
+
+def recompute_overall_score(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Recompute OVERALL SCORE from the award input columns, per the locked
+    v1 formula. Called in the player-loading path so every page gets
+    recalculated scores from one place.
+
+    NaN award cells count as 0. Players with no stored OVERALL SCORE
+    (pending/unscored, e.g. the newest class) are left untouched.
+
+    Pure function: DataFrame in → DataFrame out. No Streamlit imports.
+    """
+    out = df.copy()
+    if "OVERALL SCORE" not in out.columns:
+        return out
+
+    raw = pd.Series(0.0, index=out.index)
+    for col, weight in _V1_AWARD_WEIGHTS.items():
+        if col in out.columns:
+            raw = raw + out[col].fillna(0).astype(float) * weight
+    capped = raw.clip(upper=_V1_AWARD_CAP)
+
+    stored = out["OVERALL SCORE"]
+    scored = stored.notna()
+    baseline = stored[scored].astype(float) - _V1_DISCOUNT * capped[scored]
+    out.loc[scored, "OVERALL SCORE"] = (
+        baseline + _V1_DISCOUNT * capped[scored]
+    ).clip(upper=_V1_CEILING)
+    return out
